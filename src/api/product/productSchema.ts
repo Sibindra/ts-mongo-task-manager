@@ -4,7 +4,7 @@
  * price
  * stock
  *
- * also need to create index for db here based on name
+ * TODO: also need to create index for db here based on name
  */
 
 import { commonValidations } from "@/common/utils/commonValidation";

@@ -4,12 +4,14 @@ import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { userController } from "@/api/user/userController";
-import { CreateUserSchema, GetUserSchema, UpdateUserSchema, UserSchema } from "@/api/user/userSchema";
+import { CreateUserSchema, EUserRoles, GetUserSchema, UpdateUserSchema, UserSchema } from "@/api/user/userSchema";
+import { validateTokenPermissions } from "@/common/middleware/validateToken";
 import { validateRequest } from "@/common/utils/httpHandlers";
 
 export const userRegistry = new OpenAPIRegistry();
 export const userRouter: Router = express.Router();
 
+// TODO: need to create update me also
 userRegistry.register("User", UserSchema);
 
 // GET /users
@@ -17,21 +19,28 @@ userRegistry.registerPath({
   method: "get",
   path: "/users",
   tags: ["User"],
+  security: [{ BearerAuth: [] }],
   responses: createApiResponse(z.array(UserSchema), "Success"),
 });
 
-userRouter.get("/", userController.getUsers);
+userRouter.get("/", validateTokenPermissions([EUserRoles.ADMIN]), userController.getUsers);
 
 // GET /users/:id
 userRegistry.registerPath({
   method: "get",
   path: "/users/{id}",
   tags: ["User"],
+  security: [{ BearerAuth: [] }],
   request: { params: GetUserSchema.shape.params },
   responses: createApiResponse(UserSchema, "Success"),
 });
 
-userRouter.get("/:id", validateRequest(GetUserSchema), userController.getUser);
+userRouter.get(
+  "/:id",
+  validateRequest(GetUserSchema),
+  validateTokenPermissions([EUserRoles.ADMIN]),
+  userController.getUser,
+);
 
 // POST /users
 userRegistry.registerPath({
@@ -53,6 +62,7 @@ userRegistry.registerPath({
   method: "put",
   path: "/users/{id}",
   tags: ["User"],
+  security: [{ BearerAuth: [] }],
   request: {
     params: UpdateUserSchema.shape.params,
     body: {
@@ -62,15 +72,26 @@ userRegistry.registerPath({
   responses: createApiResponse(UserSchema, "Success"),
 });
 
-userRouter.put("/:id", validateRequest(UpdateUserSchema), userController.updateUser);
+userRouter.put(
+  "/:id",
+  validateRequest(UpdateUserSchema),
+  validateTokenPermissions([EUserRoles.ADMIN]),
+  userController.updateUser,
+);
 
 // Delete /users/:id
 userRegistry.registerPath({
   method: "delete",
   path: "/users/{id}",
   tags: ["User"],
+  security: [{ BearerAuth: [] }],
   request: { params: GetUserSchema.shape.params },
   responses: createApiResponse(UserSchema, "Success"),
 });
 
-userRouter.delete("/:id", validateRequest(GetUserSchema), userController.deleteUser);
+userRouter.delete(
+  "/:id",
+  validateTokenPermissions([EUserRoles.ADMIN]),
+  validateRequest(GetUserSchema),
+  userController.deleteUser,
+);

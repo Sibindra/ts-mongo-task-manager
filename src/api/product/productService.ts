@@ -3,7 +3,6 @@ import { Product } from "@/api/product/productModel";
 import type { TCreateProduct, TProduct, TUpdateProduct } from "@/api/product/productSchema";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { duplicateKeyHandler } from "@/common/utils/duplicateKeyHandler";
-import { validateRequest } from "@/common/utils/httpHandlers";
 import { logger } from "@/server";
 import csvParser from "csv-parser";
 import { StatusCodes } from "http-status-codes";

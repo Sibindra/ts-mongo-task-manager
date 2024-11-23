@@ -5,6 +5,8 @@ import { z } from "zod";
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { productController } from "@/api/product/productController";
 import { CreateProductSchema, GetProductSchema, UpdateProductSchema } from "@/api/product/productSchema";
+import { EUserRoles } from "@/api/user/userSchema";
+import { validateTokenPermissions } from "@/common/middleware/validateToken";
 import { validateRequest } from "@/common/utils/httpHandlers";
 import upload from "@/common/utils/upload";
 
@@ -39,6 +41,7 @@ productRegistry.registerPath({
   method: "post",
   path: "/products",
   tags: ["Product"],
+  security: [{ BearerAuth: [] }],
   request: {
     body: {
       content: {
@@ -49,13 +52,19 @@ productRegistry.registerPath({
   responses: createApiResponse(GetProductSchema, "Success"),
 });
 
-productRouter.post("/", validateRequest(CreateProductSchema), productController.createProduct);
+productRouter.post(
+  "/",
+  validateTokenPermissions([EUserRoles.ADMIN]),
+  validateRequest(CreateProductSchema),
+  productController.createProduct,
+);
 
 // Update /products/:id
 productRegistry.registerPath({
   method: "put",
   path: "/products/{id}",
   tags: ["Product"],
+  security: [{ BearerAuth: [] }],
   request: {
     params: UpdateProductSchema.shape.params,
     body: {
@@ -67,18 +76,51 @@ productRegistry.registerPath({
   responses: createApiResponse(GetProductSchema, "Success"),
 });
 
-productRouter.put("/:id", validateRequest(UpdateProductSchema), productController.updateProduct);
+productRouter.put(
+  "/:id",
+  validateTokenPermissions([EUserRoles.ADMIN]),
+  validateRequest(UpdateProductSchema),
+  productController.updateProduct,
+);
 
 // Delete /products/:id
 productRegistry.registerPath({
   method: "delete",
   path: "/products/{id}",
+  security: [{ BearerAuth: [] }],
   tags: ["Product"],
   request: { params: GetProductSchema.shape.params },
   responses: createApiResponse(GetProductSchema, "Success"),
 });
 
-productRouter.delete("/:id", validateRequest(GetProductSchema), productController.deleteProduct);
+productRouter.delete(
+  "/:id",
+  validateTokenPermissions([EUserRoles.ADMIN]),
+  validateRequest(GetProductSchema),
+  productController.deleteProduct,
+);
 
 // file upload for csv files
-productRouter.post("/upload", upload.single("file"), productController.importProducts);
+productRegistry.registerPath({
+  method: "post",
+  description: "Upload a CSV file to import products (Try at postman)",
+  security: [{ BearerAuth: [] }],
+  path: "/products/import-csv",
+  tags: ["Product"],
+  request: {
+    body: {
+      content: {
+        "multipart/form-data": {
+          schema: z.object({ file: z.instanceof(File) }),
+        },
+      },
+    },
+  },
+  responses: createApiResponse(z.null(), "Success"),
+});
+productRouter.post(
+  "/import-csv",
+  validateTokenPermissions([EUserRoles.ADMIN]),
+  upload.single("file"),
+  productController.importProducts,
+);

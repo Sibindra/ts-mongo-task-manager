@@ -4,7 +4,7 @@ import { logger } from "@/server";
 import mongoose, { Schema } from "mongoose";
 
 const mongooseUserSchemaFields = {
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: true, select: false },
   role: {
     type: String,
@@ -16,6 +16,9 @@ const mongooseUserSchemaFields = {
 };
 
 const mongooseUserSchema = new Schema<TUser>(mongooseUserSchemaFields);
+
+// creating index for user email
+mongooseUserSchema.index({ email: 1 }, { unique: true });
 
 // hash password before saving to collxn
 mongooseUserSchema.pre("save", async function (next) {

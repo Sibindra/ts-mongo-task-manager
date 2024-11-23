@@ -15,4 +15,8 @@ export const env = cleanEnv(process.env, {
   COMMON_RATE_LIMIT_WINDOW_MS: num({ devDefault: testOnly(1000) }),
   MONGODB_URL: str({ devDefault: testOnly("mongodb://127.0.0.1:27017/test") }),
   TEMP_MEDIA_PATH: str({ devDefault: testOnly("public/temp/") }),
+  JWT_SECRET: str({ devDefault: testOnly("secret") }),
+  JWT_ACCESS_EXPIRATION: str({ devDefault: testOnly("1h") }),
+  JWT_REFRESH_SECRET: str({ devDefault: testOnly("refreshSecret") }),
+  JWT_REFRESH_EXPIRATION: str({ devDefault: testOnly("7d") }),
 });
