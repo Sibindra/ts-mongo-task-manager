@@ -1,0 +1,1 @@
+1. Copy the `.env.template` into `.env`
