@@ -88,12 +88,10 @@ export class UserService {
   // update/edit existing user
   async updateUser(id: string, input: TUpdateUser): Promise<ServiceResponse<TUser | null>> {
     try {
-      const user = await User.updateOne(
-        {
-          _id: id,
-        },
-        input,
-      );
+      const user = await User.findByIdAndUpdate(id, input, {
+        new: true,
+        runValidators: true,
+      });
 
       if (!user) {
         return ServiceResponse.failure("No such user found", null, StatusCodes.NOT_FOUND);
@@ -101,6 +99,12 @@ export class UserService {
 
       return ServiceResponse.success("User Updated Succesfully", null);
     } catch (ex) {
+      const duplicateErrorResponse = duplicateKeyHandler(ex, "User already exists");
+
+      if (duplicateErrorResponse) {
+        return duplicateErrorResponse;
+      }
+
       const errorMessage = `Error updating user $${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure("An error occurred while updating user.", null, StatusCodes.INTERNAL_SERVER_ERROR);

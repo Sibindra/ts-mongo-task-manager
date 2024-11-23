@@ -31,4 +31,4 @@ mongooseUserSchema.pre("save", async function (next) {
   }
 });
 
-export const User = mongoose.model<TUser>("User", mongooseUserSchema);
+export const User = mongoose.model<TUser>("users", mongooseUserSchema);
