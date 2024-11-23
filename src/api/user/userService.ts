@@ -1,25 +1,21 @@
+import { User } from "@/api/user/userModel";
+import type { TCreateUser, TUpdateUser, TUser } from "@/api/user/userSchema";
+import { ServiceResponse } from "@/common/models/serviceResponse";
+import { duplicateKeyHandler } from "@/common/utils/duplicateKeyHandler";
+import { logger } from "@/server";
 import { StatusCodes } from "http-status-codes";
 
-import type { User } from "@/api/user/userModel";
-import { UserRepository } from "@/api/user/userRepository";
-import { ServiceResponse } from "@/common/models/serviceResponse";
-import { logger } from "@/server";
-
 export class UserService {
-  private userRepository: UserRepository;
-
-  constructor(repository: UserRepository = new UserRepository()) {
-    this.userRepository = repository;
-  }
-
-  // Retrieves all users from the database
-  async findAll(): Promise<ServiceResponse<User[] | null>> {
+  // retrieves all users from the database
+  async findAll(): Promise<ServiceResponse<TUser[] | null>> {
     try {
-      const users = await this.userRepository.findAllAsync();
+      const users = await User.find();
+
       if (!users || users.length === 0) {
-        return ServiceResponse.failure("No Users found", null, StatusCodes.NOT_FOUND);
+        return ServiceResponse.failure("No Users Found", null, StatusCodes.NOT_FOUND);
       }
-      return ServiceResponse.success<User[]>("Users found", users);
+
+      return ServiceResponse.success<TUser[]>("Users Found", users);
     } catch (ex) {
       const errorMessage = `Error finding all users: $${(ex as Error).message}`;
       logger.error(errorMessage);
@@ -31,18 +27,83 @@ export class UserService {
     }
   }
 
-  // Retrieves a single user by their ID
-  async findById(id: number): Promise<ServiceResponse<User | null>> {
+  // retrieves a single user by their ID
+  async findById(id: string): Promise<ServiceResponse<TUser | null>> {
     try {
-      const user = await this.userRepository.findByIdAsync(id);
+      const user = await User.findById(id);
+
       if (!user) {
         return ServiceResponse.failure("User not found", null, StatusCodes.NOT_FOUND);
       }
-      return ServiceResponse.success<User>("User found", user);
+
+      return ServiceResponse.success<TUser>("User found", user);
     } catch (ex) {
       const errorMessage = `Error finding user with id ${id}:, ${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure("An error occurred while finding user.", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  // create new user
+  async createUser(input: TCreateUser): Promise<ServiceResponse<Omit<TUser, "password"> | null>> {
+    try {
+      const user = await User.create(input);
+
+      if (!user) {
+        return ServiceResponse.failure("No User Found", null, StatusCodes.NOT_FOUND);
+      }
+
+      return ServiceResponse.success<Omit<TUser, "password">>("User Created Succesfully", user);
+    } catch (ex) {
+      const duplicateErrorResponse = duplicateKeyHandler(ex, "User already exists");
+      if (duplicateErrorResponse) {
+        return duplicateErrorResponse;
+      }
+
+      const errorMessage = `Error creating user $${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure("An error occurred while creating user.", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  // delete existing user
+  async deleteUser(id: string): Promise<ServiceResponse<null>> {
+    try {
+      const { acknowledged } = await User.deleteOne({
+        _id: id,
+      });
+
+      if (!acknowledged) {
+        return ServiceResponse.failure("No such user found", null, StatusCodes.NOT_FOUND);
+      }
+
+      return ServiceResponse.success("User Deleted Succesfully", null);
+    } catch (ex) {
+      const errorMessage = `Error deleting user $${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure("An error occurred while deleting user.", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  // update/edit existing user
+  async updateUser(id: string, input: TUpdateUser): Promise<ServiceResponse<TUser | null>> {
+    try {
+      const user = await User.updateOne(
+        {
+          _id: id,
+        },
+        input,
+      );
+
+      if (!user) {
+        return ServiceResponse.failure("No such user found", null, StatusCodes.NOT_FOUND);
+      }
+
+      return ServiceResponse.success("User Updated Succesfully", null);
+    } catch (ex) {
+      const errorMessage = `Error updating user $${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure("An error occurred while updating user.", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 }

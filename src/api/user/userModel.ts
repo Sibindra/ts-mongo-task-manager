@@ -1,21 +1,34 @@
-import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
-import { z } from "zod";
+import { EUserRoles, type TUser } from "@/api/user/userSchema";
+import { bcryptUtil } from "@/common/utils/bcryptUtil";
+import { logger } from "@/server";
+import mongoose, { Schema } from "mongoose";
 
-import { commonValidations } from "@/common/utils/commonValidation";
+const mongooseUserSchemaFields = {
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true, select: false },
+  role: {
+    type: String,
+    enum: Object.values(EUserRoles),
+    default: EUserRoles.CUSTOMER,
+  },
+  createdAt: { type: Date, required: true, default: Date.now },
+  updatedAt: { type: Date, required: true, default: Date.now },
+};
 
-extendZodWithOpenApi(z);
+const mongooseUserSchema = new Schema<TUser>(mongooseUserSchemaFields);
 
-export type User = z.infer<typeof UserSchema>;
-export const UserSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  email: z.string().email(),
-  age: z.number(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+// hash password before saving to collxn
+mongooseUserSchema.pre("save", async function (next) {
+  try {
+    if (this.isModified("password")) {
+      // hash only if password is modified
+      this.password = await bcryptUtil.hashPassword(this.password);
+    }
+    next();
+  } catch (error) {
+    logger.error("Error hashing password during save operation:", error);
+    next(error as mongoose.CallbackError);
+  }
 });
 
-// Input Validation for 'GET users/:id' endpoint
-export const GetUserSchema = z.object({
-  params: z.object({ id: commonValidations.id }),
-});
+export const User = mongoose.model<TUser>("User", mongooseUserSchema);
