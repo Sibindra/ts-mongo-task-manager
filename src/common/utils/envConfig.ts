@@ -14,4 +14,5 @@ export const env = cleanEnv(process.env, {
   COMMON_RATE_LIMIT_MAX_REQUESTS: num({ devDefault: testOnly(1000) }),
   COMMON_RATE_LIMIT_WINDOW_MS: num({ devDefault: testOnly(1000) }),
   MONGODB_URL: str({ devDefault: testOnly("mongodb://127.0.0.1:27017/test") }),
+  TEMP_MEDIA_PATH: str({ devDefault: testOnly("public/temp/") }),
 });

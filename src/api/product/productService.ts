@@ -1,8 +1,11 @@
+import fs from "node:fs";
 import { Product } from "@/api/product/productModel";
 import type { TCreateProduct, TProduct, TUpdateProduct } from "@/api/product/productSchema";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { duplicateKeyHandler } from "@/common/utils/duplicateKeyHandler";
+import { validateRequest } from "@/common/utils/httpHandlers";
 import { logger } from "@/server";
+import csvParser from "csv-parser";
 import { StatusCodes } from "http-status-codes";
 
 export class ProductService {
@@ -118,6 +121,61 @@ export class ProductService {
       logger.error(errorMessage);
       return ServiceResponse.failure(
         "An error occurred while updating product.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // upload products from csv file
+  async importProductsFromCSV(file: Express.Multer.File): Promise<ServiceResponse<TProduct[] | null>> {
+    // empty array of create product type
+    const products: TCreateProduct[] = [];
+
+    try {
+      fs.createReadStream(file.path)
+        .pipe(csvParser())
+        .on("data", (data) => {
+          console.log("files: ", data);
+          /**
+           * check if data has following fields as per requirements:
+           * product_id, name, price, stock
+           *
+           * if data is valid then only push them into products array
+           */
+          if (data.product_id && data.name && data.price && data.stock) {
+            // not keeping product_id as it will be replaced by _id from mongodb so no need (maybe)
+            products.push({
+              name: data.name,
+              price: Number(data.price),
+              stock: Number(data.stock),
+            });
+          }
+        })
+        .on("end", async () => {
+          try {
+            // ordered false to continue inserting even if one fails (maybe duplicate so ignore them moveon to next data)
+            await Product.insertMany(products, { ordered: false });
+            return ServiceResponse.success("Products uploaded successfully", null);
+          } catch (error) {
+            const errorMessage = `Error uploading products from csv file: ${(error as Error).message}`;
+            logger.error(errorMessage);
+            return ServiceResponse.failure(
+              "An error occurred while uploading products from csv file.",
+              null,
+              StatusCodes.INTERNAL_SERVER_ERROR,
+            );
+          } finally {
+            // delete the file after reading it
+            fs.unlinkSync(file.path);
+          }
+        });
+      return ServiceResponse.success("Products uploaded successfully", null);
+    } catch (ex) {
+      const errorMessage = `Error uploading products from csv file: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while uploading products from csv file.",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );

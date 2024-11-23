@@ -6,6 +6,7 @@ import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { productController } from "@/api/product/productController";
 import { CreateProductSchema, GetProductSchema, UpdateProductSchema } from "@/api/product/productSchema";
 import { validateRequest } from "@/common/utils/httpHandlers";
+import upload from "@/common/utils/upload";
 
 export const productRegistry = new OpenAPIRegistry();
 export const productRouter: Router = express.Router();
@@ -78,3 +79,6 @@ productRegistry.registerPath({
 });
 
 productRouter.delete("/:id", validateRequest(GetProductSchema), productController.deleteProduct);
+
+// file upload for csv files
+productRouter.post("/upload", upload.single("file"), productController.importProducts);

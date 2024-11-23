@@ -33,6 +33,12 @@ class ProductController {
     const serviceResponse = await productService.updateProduct(params.id, body);
     return handleServiceResponse(serviceResponse, res);
   };
+
+  public importProducts: RequestHandler = async (req: Request, res: Response) => {
+    const file = req.file as Express.Multer.File;
+    const serviceResponse = await productService.importProductsFromCSV(file);
+    return handleServiceResponse(serviceResponse, res);
+  };
 }
 
 export const productController = new ProductController();
