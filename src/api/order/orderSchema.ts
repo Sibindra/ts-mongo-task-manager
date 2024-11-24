@@ -6,7 +6,6 @@ import { UserSchema } from "@/api/user/userSchema";
  * user_id  (customer id)
  * order_date // created_at
  * status (pending, completed, cancelled)
- *
  */
 import { commonSchema, paginationSchema } from "@/common/utils/commonSchema";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
@@ -36,20 +35,24 @@ export const OrderSchema = z
   })
   .strict();
 
-/**
- * order_date - created_at
- * status - pending (default) so no need
- * product_id - from body
- * user_id - from token
- */
 export const CreateOrderSchema = z.object({
   body: z.object({
-    product_ids: z.array(commonSchema._id),
+    productIds: z.array(commonSchema._id),
   }),
 });
 
 export const GetAllOrdersSchema = z.object({
-  query: paginationSchema.query,
+  query: z.object({
+    ...paginationSchema.query.shape,
+    filter: z
+      .object({
+        status: z.nativeEnum(EOrderStatus).optional(),
+        customerId: commonSchema._id.optional(),
+        dateRangeStart: z.date().optional(),
+        dateRangeEnd: z.date().optional(),
+      })
+      .optional(),
+  }),
 });
 
 export const UpdateOrderStatusSchema = z.object({

@@ -23,4 +23,16 @@ const mongooseOrderSchemaFields: Record<string, any> = {
 
 const mongooseOrderSchema = new Schema<TOrder>(mongooseOrderSchemaFields);
 
+// index for common filters
+mongooseOrderSchema.index({ customer: 1, status: 1, createdAt: 1 });
+
+// index for pagination sort by latest
+mongooseOrderSchema.index({ createdAt: -1 });
+
+// index for customer-id
+mongooseOrderSchema.index({ customer: 1 });
+
+// Single index for order status
+mongooseOrderSchema.index({ status: 1 });
+
 export const Order = mongoose.model<TOrder>("orders", mongooseOrderSchema);

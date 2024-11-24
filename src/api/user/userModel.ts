@@ -17,9 +17,7 @@ const mongooseUserSchemaFields = {
 };
 
 const mongooseUserSchema = new Schema<TUser>(mongooseUserSchemaFields);
-
-// creating index for user email
-mongooseUserSchema.index({ email: 1 }, { unique: true });
+mongooseUserSchema.index({ createdAt: -1 });
 
 // hash password before saving to collxn
 mongooseUserSchema.pre("save", async function (next) {

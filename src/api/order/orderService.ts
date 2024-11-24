@@ -11,10 +11,23 @@ export class OrderService {
   // get all orders
   async findAll(query: TGetAllOrders): Promise<ServiceResponse<TPaginationResponse<TOrder> | null>> {
     try {
-      const { page = 1, limit = 10 } = query;
+      const { page = 1, limit = 10, filter } = query;
       const skip = page > 0 ? (page - 1) * limit : 0;
 
-      const orders = await Order.find().populate("products").populate("customer").skip(skip).limit(limit).lean();
+      const filters: Record<string, unknown> = {
+        ...(filter?.status && { status: filter.status }),
+        ...(filter?.customerId && { customer: filter.customerId }),
+        ...(filter?.dateRangeStart || filter?.dateRangeEnd
+          ? {
+              createdAt: {
+                ...(filter?.dateRangeStart && { $gte: filter.dateRangeStart }),
+                ...(filter?.dateRangeEnd && { $lte: filter.dateRangeEnd }),
+              },
+            }
+          : {}),
+      };
+
+      const orders = await Order.find(filters).populate("products").populate("customer").skip(skip).limit(limit).lean();
 
       const totalItems = await Order.countDocuments();
       const totalPages = Math.ceil(totalItems / limit);
@@ -59,12 +72,12 @@ export class OrderService {
 
       try {
         const products = await Product.find({
-          _id: { $in: input.product_ids },
+          _id: { $in: input.productIds },
         })
           .select("stock")
           .session(session);
 
-        if (!products.length || products.length !== input.product_ids.length) {
+        if (!products.length || products.length !== input.productIds.length) {
           throw new Error("One or more products not found.");
         }
 
@@ -75,7 +88,7 @@ export class OrderService {
           }
         }
 
-        const order = await Order.create([{ ...input, products: input.product_ids, customer: user_id }], { session });
+        const order = await Order.create([{ ...input, products: input.productIds, customer: user_id }], { session });
 
         if (!order) {
           throw new Error("Order creation failed.");
@@ -83,7 +96,7 @@ export class OrderService {
 
         // decrement stock
         const updateStock = await Product.updateMany(
-          { _id: { $in: input.product_ids } },
+          { _id: { $in: input.productIds } },
           { $inc: { stock: -1 } },
           { session },
         );

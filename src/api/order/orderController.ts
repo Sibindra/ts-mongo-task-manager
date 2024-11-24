@@ -1,13 +1,20 @@
-import { DeleteOrderSchema, GetOrderSchema, UpdateOrderStatusSchema } from "@/api/order/orderSchema";
+import {
+  DeleteOrderSchema,
+  GetAllOrdersSchema,
+  GetOrderSchema,
+  UpdateOrderStatusSchema,
+} from "@/api/order/orderSchema";
 import type { Request, RequestHandler, Response } from "express";
 
 import { orderService } from "@/api/order/orderService";
 import { handleServiceResponse } from "@/common/models/httpHandlers";
 import { getIDFromRequest } from "@/common/utils/getIdFromReq";
+import { normalizeQuery } from "@/common/utils/normalizeQuery";
 
 class OrderController {
   public getOrders: RequestHandler = async (req: Request, res: Response) => {
-    const serviceResponse = await orderService.findAll(req.query);
+    const normalizedQuery = normalizeQuery(req.query);
+    const serviceResponse = await orderService.findAll(normalizedQuery);
     return handleServiceResponse(serviceResponse, res);
   };
 
