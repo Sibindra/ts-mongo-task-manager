@@ -23,4 +23,11 @@ export const env = cleanEnv(process.env, {
   ADMIN_PASSWORD: str({ devDefault: testOnly("admin1234") }),
   ADMIN_NAME: str({ devDefault: testOnly("Admin") }),
   CSV_RECORDS_PATH: str({ devDefault: testOnly("public/records/") }),
+  PRODUCT_STOCK_THRESHOLD: num({ devDefault: testOnly(10) }),
+  EMAIL_HOST: str({ devDefault: testOnly("smtp.gmail.com") }),
+  EMAIL_PORT: num({ devDefault: testOnly(587) }),
+  EMAIL_USER: str({ devDefault: testOnly("test@test.com") }),
+  EMAIL_PASS: str({ devDefault: testOnly("password") }),
+  EMAIL_FROM: str({ devDefault: testOnly("nobody") }),
+  EMAIL_TEMPLATES_PATH: str({ devDefault: testOnly("public/templates/email") }),
 });

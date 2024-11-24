@@ -8,7 +8,8 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # donot store the temp and env folder in git
-/public/*
+/public/temp
+/public/records
 
 coverage
 node_modules
