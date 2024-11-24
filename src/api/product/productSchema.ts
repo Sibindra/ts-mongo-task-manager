@@ -22,9 +22,9 @@ export type TDeleteProduct = z.infer<typeof DeleteProductSchema>;
 export const ProductSchema = z
   .object({
     ...commonSchema,
-    name: z.string(),
-    price: z.number(),
-    stock: z.number(),
+    name: z.string().min(3).max(255),
+    price: z.number().min(0).max(1000000),
+    stock: z.number().min(0).max(1000000),
   })
   .strict();
 

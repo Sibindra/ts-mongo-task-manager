@@ -6,17 +6,20 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
+# Install pnpm globally
+RUN npm install -g pnpm
+
 # Install app dependencies
-RUN npm ci
+RUN pnpm install
 
 # Bundle app source
 COPY . .
 
 # Build the TypeScript files
-RUN npm run build
+RUN pnpm run build
 
 # Expose port 8080
 EXPOSE 8080
 
 # Start the app
-CMD npm run start
+CMD pnpm run start

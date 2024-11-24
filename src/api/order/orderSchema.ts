@@ -29,7 +29,7 @@ export type TDeleteOrder = z.infer<typeof DeleteOrderSchema>;
 export const OrderSchema = z
   .object({
     ...commonSchema,
-    products: z.array(ProductSchema),
+    products: z.array(ProductSchema).min(1),
     customer: UserSchema,
     status: z.nativeEnum(EOrderStatus),
   })
