@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { Order } from "@/api/order/orderModel";
 import { EOrderStatus } from "@/api/order/orderSchema";
-import { env } from "@/common/utils/envConfig";
+import { env } from "@/common/configs/envConfig";
 import { logger } from "@/server";
 import { createObjectCsvWriter } from "csv-writer";
 

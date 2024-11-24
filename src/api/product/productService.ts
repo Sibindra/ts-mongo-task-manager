@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import { Product } from "@/api/product/productModel";
 import type { TCreateProduct, TProduct, TUpdateProduct } from "@/api/product/productSchema";
+import { duplicateKeyHandler } from "@/common/models/duplicateKeyHandler";
 import { handleServerError } from "@/common/models/handleServerError";
 import { ServiceResponse } from "@/common/models/serviceResponse";
-import { duplicateKeyHandler } from "@/common/utils/duplicateKeyHandler";
 import csvParser from "csv-parser";
 import { StatusCodes } from "http-status-codes";
 

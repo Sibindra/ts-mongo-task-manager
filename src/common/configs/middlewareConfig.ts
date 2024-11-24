@@ -1,5 +1,5 @@
+import { env } from "@/common/configs/envConfig";
 import rateLimiter from "@/common/middleware/rateLimiter";
-import { env } from "@/common/utils/envConfig";
 import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";

@@ -6,9 +6,9 @@ import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { productController } from "@/api/product/productController";
 import { CreateProductSchema, GetProductSchema, UpdateProductSchema } from "@/api/product/productSchema";
 import { EUserRoles } from "@/api/user/userSchema";
+import upload from "@/common/configs/uploadConfig";
 import { validateTokenPermissions } from "@/common/middleware/validateToken";
-import { validateRequest } from "@/common/utils/httpHandlers";
-import upload from "@/common/utils/upload";
+import { validateRequest } from "@/common/models/httpHandlers";
 
 export const productRegistry = new OpenAPIRegistry();
 export const productRouter: Router = express.Router();

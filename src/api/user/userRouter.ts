@@ -6,7 +6,7 @@ import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { userController } from "@/api/user/userController";
 import { CreateUserSchema, EUserRoles, GetUserSchema, UpdateUserSchema, UserSchema } from "@/api/user/userSchema";
 import { validateTokenPermissions } from "@/common/middleware/validateToken";
-import { validateRequest } from "@/common/utils/httpHandlers";
+import { validateRequest } from "@/common/models/httpHandlers";
 
 export const userRegistry = new OpenAPIRegistry();
 export const userRouter: Router = express.Router();

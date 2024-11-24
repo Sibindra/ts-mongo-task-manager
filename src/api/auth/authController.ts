@@ -2,7 +2,7 @@ import type { Request, RequestHandler, Response } from "express";
 
 import { LoginSchema, RefreshTokenSchema } from "@/api/auth/authSchema";
 import { authService } from "@/api/auth/authService";
-import { handleServiceResponse } from "@/common/utils/httpHandlers";
+import { handleServiceResponse } from "@/common/models/httpHandlers";
 
 class AuthController {
   public login: RequestHandler = async (req: Request, res: Response) => {

@@ -1,4 +1,4 @@
-import { env } from "@/common/utils/envConfig";
+import { env } from "@/common/configs/envConfig";
 import jwt, { verify } from "jsonwebtoken";
 
 export type TokenPayload = {

@@ -7,7 +7,7 @@ import { orderController } from "@/api/order/orderController";
 import { CreateOrderSchema, GetOrderSchema, OrderSchema, UpdateOrderStatusSchema } from "@/api/order/orderSchema";
 import { EUserRoles } from "@/api/user/userSchema";
 import { validateTokenPermissions } from "@/common/middleware/validateToken";
-import { validateRequest } from "@/common/utils/httpHandlers";
+import { validateRequest } from "@/common/models/httpHandlers";
 
 export const orderRegistry = new OpenAPIRegistry();
 export const orderRouter: Router = express.Router();

@@ -1,8 +1,8 @@
 import { User } from "@/api/user/userModel";
 import type { TCreateUser, TUpdateUser, TUser } from "@/api/user/userSchema";
+import { duplicateKeyHandler } from "@/common/models/duplicateKeyHandler";
 import { handleServerError } from "@/common/models/handleServerError";
 import { ServiceResponse } from "@/common/models/serviceResponse";
-import { duplicateKeyHandler } from "@/common/utils/duplicateKeyHandler";
 import { StatusCodes } from "http-status-codes";
 
 export class UserService {

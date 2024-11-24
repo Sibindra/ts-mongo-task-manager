@@ -3,7 +3,7 @@ import type { Request, RequestHandler, Response } from "express";
 import { DeleteProductSchema, GetProductSchema, UpdateProductSchema } from "@/api/product/productSchema";
 
 import { productService } from "@/api/product/productService";
-import { handleServiceResponse } from "@/common/utils/httpHandlers";
+import { handleServiceResponse } from "@/common/models/httpHandlers";
 
 class ProductController {
   public getProducts: RequestHandler = async (_req: Request, res: Response) => {

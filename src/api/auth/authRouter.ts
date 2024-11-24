@@ -9,7 +9,7 @@ import {
   RefreshTokenResponseSchema,
   RefreshTokenSchema,
 } from "@/api/auth/authSchema";
-import { validateRequest } from "@/common/utils/httpHandlers";
+import { validateRequest } from "@/common/models/httpHandlers";
 
 export const authRegistry = new OpenAPIRegistry();
 export const authRouter: Router = express.Router();

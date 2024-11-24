@@ -1,8 +1,8 @@
 import { User } from "@/api/user/userModel";
 import { EUserRoles } from "@/api/user/userSchema";
+import { env } from "@/common/configs/envConfig";
+import connectMongoDB from "@/common/database/connectMongoDB"; // Ensure this is the correct path
 import { bcryptUtil } from "@/common/utils/bcryptUtil";
-import connectMongoDB from "@/common/utils/connectMongoDB"; // Ensure this is the correct path
-import { env } from "@/common/utils/envConfig";
 import mongoose from "mongoose";
 
 export const adminSeed = async () => {

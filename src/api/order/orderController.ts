@@ -2,8 +2,8 @@ import { DeleteOrderSchema, GetOrderSchema, UpdateOrderStatusSchema } from "@/ap
 import type { Request, RequestHandler, Response } from "express";
 
 import { orderService } from "@/api/order/orderService";
+import { handleServiceResponse } from "@/common/models/httpHandlers";
 import { getIDFromRequest } from "@/common/utils/getIdFromReq";
-import { handleServiceResponse } from "@/common/utils/httpHandlers";
 import { tokenUtil } from "@/common/utils/tokenUtil";
 import type { JwtPayload } from "jsonwebtoken";
 

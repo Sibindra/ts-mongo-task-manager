@@ -2,8 +2,8 @@ import type { Request, RequestHandler, Response } from "express";
 
 import { DeleteUserSchema, GetUserSchema, UpdateUserSchema } from "@/api/user/userSchema";
 import { userService } from "@/api/user/userService";
+import { handleServiceResponse } from "@/common/models/httpHandlers";
 import { getIDFromRequest } from "@/common/utils/getIdFromReq";
-import { handleServiceResponse } from "@/common/utils/httpHandlers";
 
 class UserController {
   public whoAmI: RequestHandler = async (req: Request, res: Response) => {

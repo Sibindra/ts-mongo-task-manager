@@ -1,4 +1,4 @@
-import { exportPaidOrders } from "@/common/utils/exportPaidOrders";
+import { exportPaidOrders } from "@/common/cron/jobs/exportPaidOrders";
 import { logger } from "@/server";
 import { CronJob } from "cron";
 
