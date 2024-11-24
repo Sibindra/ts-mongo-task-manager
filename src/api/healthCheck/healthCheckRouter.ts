@@ -12,6 +12,7 @@ export const healthCheckRouter: Router = express.Router();
 healthCheckRegistry.registerPath({
   method: "get",
   path: "/health-check",
+  description: "Check if the service is healthy",
   tags: ["Health Check"],
   responses: createApiResponse(z.null(), "Success"),
 });

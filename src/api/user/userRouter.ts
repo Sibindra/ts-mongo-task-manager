@@ -9,6 +9,7 @@ import {
   EUserRoles,
   GetAllUsersSchema,
   GetUserSchema,
+  UpdateMeSchema,
   UpdateUserSchema,
   UserSchema,
 } from "@/api/user/userSchema";
@@ -25,12 +26,18 @@ userRegistry.registerPath({
   method: "get",
   path: "/users",
   tags: ["User"],
+  description: "Get all users. For admin only",
   security: [{ BearerAuth: [] }],
   request: { query: GetAllUsersSchema.shape.query },
   responses: createApiResponse(z.array(UserSchema), "Success"),
 });
 
-userRouter.get("/", validateTokenPermissions([EUserRoles.ADMIN]), userController.getUsers);
+userRouter.get(
+  "/",
+  validateTokenPermissions([EUserRoles.ADMIN]),
+  validateRequest(GetAllUsersSchema),
+  userController.getUsers,
+);
 
 // UPDATE me
 userRegistry.registerPath({
@@ -41,31 +48,32 @@ userRegistry.registerPath({
   security: [{ BearerAuth: [] }],
   request: {
     body: {
-      content: { "application/json": { schema: UpdateUserSchema.shape.body } },
+      content: { "application/json": { schema: UpdateMeSchema.shape.body } },
     },
   },
   responses: createApiResponse(UserSchema, "Success"),
 });
 
-userRouter.put("/me", validateRequest(UpdateUserSchema), userController.updateMe);
+userRouter.put("/me", validateTokenPermissions(), validateRequest(UpdateMeSchema), userController.updateMe);
 
 // GET /users/me
 userRegistry.registerPath({
   method: "get",
   path: "/users/me",
-  description: "Get me as a user. This is a self get.",
+  description: "Get me as a user. This is a self get. For both admin and customer/user",
   tags: ["User"],
   security: [{ BearerAuth: [] }],
   responses: createApiResponse(UserSchema, "Success"),
 });
 
-userRouter.get("/me", validateTokenPermissions([EUserRoles.ADMIN]), userController.whoAmI);
+userRouter.get("/me", validateTokenPermissions(), userController.whoAmI);
 
 // GET /users/:id
 userRegistry.registerPath({
   method: "get",
   path: "/users/{id}",
   tags: ["User"],
+  description: "Get a single user by its ID. For admin only",
   security: [{ BearerAuth: [] }],
   request: { params: GetUserSchema.shape.params },
   responses: createApiResponse(UserSchema, "Success"),
@@ -83,6 +91,7 @@ userRegistry.registerPath({
   method: "post",
   path: "/users",
   tags: ["User"],
+  description: "Create/Register a new user. For all roles",
   request: {
     body: {
       content: { "application/json": { schema: CreateUserSchema.shape.body } },
@@ -98,6 +107,7 @@ userRegistry.registerPath({
   method: "put",
   path: "/users/{id}",
   tags: ["User"],
+  description: "Update a user by its ID. Need to be an admin for this",
   security: [{ BearerAuth: [] }],
   request: {
     params: UpdateUserSchema.shape.params,
@@ -120,6 +130,7 @@ userRegistry.registerPath({
   method: "delete",
   path: "/users/{id}",
   tags: ["User"],
+  description: "Delete a user by its ID. For admin only",
   security: [{ BearerAuth: [] }],
   request: { params: GetUserSchema.shape.params },
   responses: createApiResponse(UserSchema, "Success"),

@@ -54,7 +54,18 @@ export const UpdateUserSchema = z.object({
     createdAt: true,
     updatedAt: true,
     role: true,
-  }),
+    password: true,
+  }).partial(),
+});
+
+export const UpdateMeSchema = z.object({
+  body: UserSchema.omit({
+    _id: true,
+    createdAt: true,
+    updatedAt: true,
+    role: true,
+    password: true,
+  }).partial(),
 });
 
 // DELETE users/:id

@@ -12,6 +12,7 @@ export class OrderService {
   async findAll(query: TGetAllOrders): Promise<ServiceResponse<TPaginationResponse<TOrder> | null>> {
     try {
       const { page = 1, limit = 10, filter } = query;
+
       const skip = page > 0 ? (page - 1) * limit : 0;
 
       const filters: Record<string, unknown> = {
@@ -50,7 +51,7 @@ export class OrderService {
   // get a single order by its ID
   async findById(id: string): Promise<ServiceResponse<TOrder | null>> {
     try {
-      const order = await Order.findById(id).lean();
+      const order = await Order.findById(id).populate("customer").populate("products").lean();
 
       if (!order) {
         return ServiceResponse.failure("Order not found", null, StatusCodes.NOT_FOUND);

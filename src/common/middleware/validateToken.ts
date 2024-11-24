@@ -51,10 +51,6 @@ const validateTokenPermissions = (roles?: EUserRoles[]) => {
             .json(ServiceResponse.failure("Access denied: Insufficient permissions", null));
         }
       }
-
-      //  decoded token to the request object for downstream use
-      (req as any).user = decodedToken;
-
       // role is valid (or not required)
       next();
     } catch (error) {

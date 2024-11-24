@@ -25,19 +25,19 @@ productRegistry.registerPath({
   method: "get",
   path: "/products",
   tags: ["Product"],
-  description: "Get all products",
+  description: "Get all products. For admin and customer both",
   request: { query: GetAllProductsSchema.shape.query },
   responses: createApiResponse(z.array(GetProductSchema), "Success"),
 });
 
-productRouter.get("/", productController.getProducts);
+productRouter.get("/", validateRequest(GetAllProductsSchema), productController.getProducts);
 
 // GET /products/:id
 productRegistry.registerPath({
   method: "get",
   path: "/products/{id}",
   tags: ["Product"],
-  description: "Get a single product by its ID",
+  description: "Get a single product by its ID. For both admin and customer",
   request: { params: GetProductSchema.shape.params },
   responses: createApiResponse(GetProductSchema, "Success"),
 });
@@ -49,7 +49,7 @@ productRegistry.registerPath({
   method: "post",
   path: "/products",
   tags: ["Product"],
-  description: "Create a new product",
+  description: "Create a new product. You need to be an admin for this",
   security: [{ BearerAuth: [] }],
   request: {
     body: {
@@ -73,7 +73,7 @@ productRegistry.registerPath({
   method: "put",
   path: "/products/{id}",
   tags: ["Product"],
-  description: "Update a product by its ID",
+  description: "Update a product by its ID. Need to be an admin for this",
   security: [{ BearerAuth: [] }],
   request: {
     params: UpdateProductSchema.shape.params,
@@ -98,7 +98,7 @@ productRegistry.registerPath({
   method: "delete",
   path: "/products/{id}",
   security: [{ BearerAuth: [] }],
-  description: "Delete a product by its ID",
+  description: "Delete a product by its ID. Need to be an admin for this",
   tags: ["Product"],
   request: { params: GetProductSchema.shape.params },
   responses: createApiResponse(GetProductSchema, "Success"),
@@ -114,7 +114,7 @@ productRouter.delete(
 // file upload for csv files
 productRegistry.registerPath({
   method: "post",
-  description: "Upload a CSV file to import products (Try at postman)",
+  description: "Upload a CSV file to import products. Need to be an admin for this",
   security: [{ BearerAuth: [] }],
   path: "/products/import-csv",
   tags: ["Product"],

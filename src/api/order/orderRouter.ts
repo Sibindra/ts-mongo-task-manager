@@ -25,13 +25,18 @@ orderRegistry.registerPath({
   method: "get",
   path: "/orders",
   security: [{ BearerAuth: [] }],
-  description: "Get all orders",
+  description: "Get all orders. You need to be logged in as admin",
   request: { query: GetAllOrdersSchema.shape.query },
   tags: ["Order"],
   responses: createApiResponse(z.array(OrderSchema), "Success"),
 });
 
-orderRouter.get("/", orderController.getOrders);
+orderRouter.get(
+  "/",
+  validateTokenPermissions([EUserRoles.ADMIN]),
+  validateRequest(GetAllOrdersSchema),
+  orderController.getOrders,
+);
 
 // GET /orders/my-orders
 orderRegistry.registerPath({
@@ -43,38 +48,52 @@ orderRegistry.registerPath({
   responses: createApiResponse(z.array(GetOrderSchema), "Success"),
 });
 
-orderRouter.get("/my-orders", validateTokenPermissions([EUserRoles.CUSTOMER]), orderController.getMyOrders);
+orderRouter.get(
+  "/my-orders",
+  validateTokenPermissions([EUserRoles.CUSTOMER]),
+  validateRequest(GetAllOrdersSchema),
+  orderController.getMyOrders,
+);
 
 // GET /orders/user
-orderRegistry.registerPath({
-  method: "get",
-  path: "/orders/user",
-  description: "Get all orders by a user",
-  tags: ["Order"],
-  security: [{ BearerAuth: [] }],
-  responses: createApiResponse(z.array(GetOrderSchema), "Success"),
-});
+// orderRegistry.registerPath({
+//   method: "get",
+//   path: "/orders/user",
+//   description: "Get all orders by a user. This is for admin only",
+//   tags: ["Order"],
+//   security: [{ BearerAuth: [] }],
+//   responses: createApiResponse(z.array(GetOrderSchema), "Success"),
+// });
 
-orderRouter.get("/user", validateTokenPermissions([EUserRoles.ADMIN]), orderController.getOrdersByUser);
+// orderRouter.get(
+//   "/user",
+//   validateTokenPermissions([EUserRoles.ADMIN]),
+//   orderController.getOrdersByUser
+// );
 
 // GET /orders/:id
 orderRegistry.registerPath({
   method: "get",
   path: "/orders/{id}",
   tags: ["Order"],
-  description: "Get a single order by its ID",
+  description: "Get a single order by its ID. For admin only",
   security: [{ BearerAuth: [] }],
   request: { params: GetOrderSchema.shape.params },
   responses: createApiResponse(GetOrderSchema, "Success"),
 });
 
-orderRouter.get("/:id", validateRequest(GetOrderSchema), orderController.getOrder);
+orderRouter.get(
+  "/:id",
+  validateRequest(GetOrderSchema),
+  validateTokenPermissions([EUserRoles.ADMIN]),
+  orderController.getOrder,
+);
 
 // POST /orders
 orderRegistry.registerPath({
   method: "post",
   path: "/orders",
-  description: "Create a new order",
+  description: "Create a new order. You need to be logged in as a customer",
   tags: ["Order"],
   security: [{ BearerAuth: [] }],
   request: {
@@ -98,7 +117,7 @@ orderRouter.post(
 orderRegistry.registerPath({
   method: "put",
   path: "/orders/{id}",
-  description: "Update the status of an order",
+  description: "Update the status of an order. You need to be admin",
   tags: ["Order"],
   security: [{ BearerAuth: [] }],
   request: {
@@ -123,7 +142,7 @@ orderRouter.put(
 orderRegistry.registerPath({
   method: "delete",
   path: "/orders/{id}",
-  description: "Delete an order",
+  description: "Delete an order. Only pending orders can be deleted and by admin only",
   tags: ["Order"],
   security: [{ BearerAuth: [] }],
   request: { params: GetOrderSchema.shape.params },
@@ -132,7 +151,7 @@ orderRegistry.registerPath({
 
 orderRouter.delete(
   "/:id",
-  validateTokenPermissions([EUserRoles.ADMIN, EUserRoles.CUSTOMER]),
+  validateTokenPermissions([EUserRoles.ADMIN]),
   validateRequest(GetOrderSchema),
   orderController.deleteOrder,
 );

@@ -42,7 +42,7 @@ class UserController {
   };
 
   public updateMe: RequestHandler = async (req: Request, res: Response) => {
-    const id = (await getIDFromRequest(req)) as string;
+    const id = await getIDFromRequest(req);
     const serviceResponse = await userService.updateUser(id, req.body);
     return handleServiceResponse(serviceResponse, res);
   };

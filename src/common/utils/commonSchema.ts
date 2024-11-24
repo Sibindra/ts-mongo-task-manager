@@ -8,7 +8,9 @@ export type TPaginationResponse<T> = {
 };
 
 export const commonSchema = {
-  _id: z.string(),
+  _id: z.string().refine((val) => /^[0-9a-fA-F]{24}$/.test(val), {
+    message: "Invalid ObjectId format",
+  }),
   createdAt: z.date(),
   updatedAt: z.date(),
 };

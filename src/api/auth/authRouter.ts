@@ -21,7 +21,7 @@ authRegistry.registerPath({
   method: "post",
   path: "/auth/login",
   tags: ["Auth"],
-  description: "Login to the application",
+  description: "Login to the application for both admin and user",
   request: {
     body: {
       content: {

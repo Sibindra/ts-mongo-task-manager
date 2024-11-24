@@ -2,6 +2,8 @@
 
 The project uses Express and MongoDB for the backend. Cron jobs are handled with cron, while emails are sent using Nodemailer. For handling file uploads, we use Multer, and CSV parsing is done with csv-parser. JWT is used for authentication.
 
+The Openapi docs are at / routes.
+
 ---
 
 ### Running Locally
@@ -35,5 +37,5 @@ Admin credentials:
 
 Example customer:
 
-- Email: `tester@gmail.com`
+- Email: `user@example.com`
 - Password: `Test@123`
