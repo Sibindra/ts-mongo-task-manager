@@ -1,3 +1,5 @@
+import { ProductSchema } from "@/api/product/productSchema";
+import { UserSchema } from "@/api/user/userSchema";
 /**
  * _id
  * product_id
@@ -14,8 +16,7 @@ extendZodWithOpenApi(z);
 
 export enum EOrderStatus {
   PENDING = "Pending",
-  COMPLETED = "Completed",
-  CANCELLED = "Cancelled",
+  PAID = "Paid",
 }
 
 export type TOrder = z.infer<typeof OrderSchema>;
@@ -28,8 +29,8 @@ export type TDeleteOrder = z.infer<typeof DeleteOrderSchema>;
 export const OrderSchema = z
   .object({
     ...commonValidations,
-    product_id: z.string(),
-    user_id: z.string(),
+    products: z.array(ProductSchema),
+    customer: UserSchema,
     status: z.nativeEnum(EOrderStatus),
   })
   .strict();
@@ -41,9 +42,9 @@ export const OrderSchema = z
  * user_id - from token
  */
 export const CreateOrderSchema = z.object({
-  body: OrderSchema.pick({
-    product_id: true,
-  }).strict(),
+  body: z.object({
+    product_ids: z.array(commonValidations._id),
+  }),
 });
 
 export const UpdateOrderStatusSchema = z.object({

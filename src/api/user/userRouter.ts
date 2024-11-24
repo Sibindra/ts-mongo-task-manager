@@ -24,6 +24,35 @@ userRegistry.registerPath({
 
 userRouter.get("/", validateTokenPermissions([EUserRoles.ADMIN]), userController.getUsers);
 
+// UPDATE me
+userRegistry.registerPath({
+  method: "put",
+  path: "/users/me",
+  description: "Update me as a user. This is a self update.",
+  tags: ["User"],
+  security: [{ BearerAuth: [] }],
+  request: {
+    body: {
+      content: { "application/json": { schema: UpdateUserSchema.shape.body } },
+    },
+  },
+  responses: createApiResponse(UserSchema, "Success"),
+});
+
+userRouter.put("/me", validateRequest(UpdateUserSchema), userController.updateMe);
+
+// GET /users/me
+userRegistry.registerPath({
+  method: "get",
+  path: "/users/me",
+  description: "Get me as a user. This is a self get.",
+  tags: ["User"],
+  security: [{ BearerAuth: [] }],
+  responses: createApiResponse(UserSchema, "Success"),
+});
+
+userRouter.get("/me", validateTokenPermissions([EUserRoles.ADMIN]), userController.whoAmI);
+
 // GET /users/:id
 userRegistry.registerPath({
   method: "get",
@@ -94,20 +123,3 @@ userRouter.delete(
   validateRequest(GetUserSchema),
   userController.deleteUser,
 );
-
-// UPDATE me
-userRegistry.registerPath({
-  method: "put",
-  path: "/users/me",
-  description: "Update me as a user. This is a self update.",
-  tags: ["User"],
-  security: [{ BearerAuth: [] }],
-  request: {
-    body: {
-      content: { "application/json": { schema: UpdateUserSchema.shape.body } },
-    },
-  },
-  responses: createApiResponse(UserSchema, "Success"),
-});
-
-userRouter.put("/me", validateRequest(UpdateUserSchema), userController.updateMe);

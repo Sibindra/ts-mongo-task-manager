@@ -19,4 +19,8 @@ export const env = cleanEnv(process.env, {
   JWT_ACCESS_EXPIRATION: str({ devDefault: testOnly("1h") }),
   JWT_REFRESH_SECRET: str({ devDefault: testOnly("refreshSecret") }),
   JWT_REFRESH_EXPIRATION: str({ devDefault: testOnly("7d") }),
+  ADMIN_EMAIL: str({ devDefault: testOnly("test@gmail.com") }),
+  ADMIN_PASSWORD: str({ devDefault: testOnly("admin1234") }),
+  ADMIN_NAME: str({ devDefault: testOnly("Admin") }),
+  CSV_RECORDS_PATH: str({ devDefault: testOnly("public/records/") }),
 });

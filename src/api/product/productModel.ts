@@ -9,4 +9,7 @@ const mongooseProductSchemaFields = {
 
 const mongooseProductSchema = new Schema<TProduct>(mongooseProductSchemaFields);
 
+// create an index based on stock
+mongooseProductSchema.index({ stock: 1, price: 1 });
+
 export const Product = mongoose.model("products", mongooseProductSchema);

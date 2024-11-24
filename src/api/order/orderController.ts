@@ -2,6 +2,7 @@ import { DeleteOrderSchema, GetOrderSchema, UpdateOrderStatusSchema } from "@/ap
 import type { Request, RequestHandler, Response } from "express";
 
 import { orderService } from "@/api/order/orderService";
+import { getIDFromRequest } from "@/common/utils/getIdFromReq";
 import { handleServiceResponse } from "@/common/utils/httpHandlers";
 import { tokenUtil } from "@/common/utils/tokenUtil";
 import type { JwtPayload } from "jsonwebtoken";
@@ -19,11 +20,8 @@ class OrderController {
   };
 
   public createOrder: RequestHandler = async (req: Request, res: Response) => {
-    // get user_id from token
-    const token = req.headers.authorization?.split(" ")[1] as string;
-    const user_id = (tokenUtil.decodeToken(token) as JwtPayload).id;
-
-    const serviceResponse = await orderService.createOrder(user_id, req.body);
+    const id = await getIDFromRequest(req);
+    const serviceResponse = await orderService.createOrder(id, req.body);
     return handleServiceResponse(serviceResponse, res);
   };
 
@@ -40,18 +38,14 @@ class OrderController {
   };
 
   public getOrdersByUser: RequestHandler = async (req: Request, res: Response) => {
-    const token = req.headers.authorization?.split(" ")[1] as string;
-    const user_id = (tokenUtil.decodeToken(token) as JwtPayload).id;
-
-    const serviceResponse = await orderService.getOrdersByUser(user_id);
+    const id = await getIDFromRequest(req);
+    const serviceResponse = await orderService.getOrdersByUser(id);
     return handleServiceResponse(serviceResponse, res);
   };
 
   public getMyOrders: RequestHandler = async (req: Request, res: Response) => {
-    const token = req.headers.authorization?.split(" ")[1] as string;
-    const user_id = (tokenUtil.decodeToken(token) as JwtPayload).id;
-
-    const serviceResponse = await orderService.getOrdersByUser(user_id);
+    const id = await getIDFromRequest(req);
+    const serviceResponse = await orderService.getOrdersByUser(id);
     return handleServiceResponse(serviceResponse, res);
   };
 }

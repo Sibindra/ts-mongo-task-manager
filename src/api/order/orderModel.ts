@@ -1,9 +1,17 @@
 import { EOrderStatus, type TOrder } from "@/api/order/orderSchema";
 import mongoose, { Schema } from "mongoose";
 
-const mongooseOrderSchemaFields = {
-  product_id: { type: String, required: true },
-  user_id: { type: String, required: true },
+const mongooseOrderSchemaFields: Record<string, any> = {
+  products: {
+    type: Array<Schema.Types.ObjectId>,
+    ref: "products",
+    required: true,
+  },
+  customer: {
+    type: Schema.Types.ObjectId,
+    ref: "users",
+    required: true,
+  },
   status: {
     type: String,
     enum: Object.values(EOrderStatus),

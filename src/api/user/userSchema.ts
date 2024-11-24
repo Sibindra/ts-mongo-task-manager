@@ -18,6 +18,7 @@ export enum EUserRoles {
 export const UserSchema = z
   .object({
     ...commonValidations,
+    name: z.string().describe("User name"),
     email: z.string().email().describe("User email address"),
     password: z.string().describe("User password"),
 

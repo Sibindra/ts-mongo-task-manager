@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import { pino } from "pino";
 
 import { openAPIRouter } from "@/api-docs/openAPIRouter";
+import { startCronJobs } from "@/common/configs/cronJobs";
 import { middlewareConfig } from "@/common/configs/middlewareConfig";
 import { routerConfig } from "@/common/configs/routerConfig";
 import errorHandler from "@/common/middleware/errorHandler";
@@ -28,5 +29,8 @@ app.use(errorHandler());
 
 // Connect to Mongodb
 connectMongoDB();
+
+// Start Cronjobs
+startCronJobs();
 
 export { app, logger };

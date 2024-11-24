@@ -6,22 +6,24 @@ import { StatusCodes } from "http-status-codes";
 import type { JwtPayload } from "jsonwebtoken";
 
 /**
- * Middleware to validate user token and permissions.
+ *  validate user token and permissions.
  *
- * @param roles - array of user roles allowed to access the route
- * @returns express middleware fxn
+ * @param roles - array of user roles allowed to access (optional).
+ *                if no roles are provided only checks the token
+ * @returns middleware fxn
  */
-const validateTokenPermissions = (roles: EUserRoles[]) => {
+const validateTokenPermissions = (roles?: EUserRoles[]) => {
   return (req: Request, res: Response, next: NextFunction): Response | void => {
     const header = req.headers.authorization;
 
+    // check for the presence of the auth header
     if (!header) {
       return res.status(StatusCodes.UNAUTHORIZED).json(ServiceResponse.failure("No token provided", null));
     }
 
     const [scheme, token] = header.split(" ");
 
-    // check if the token is in the format "Bearer
+    // check token format (must be "Bearer <token>")
     if (scheme !== "Bearer" || !token) {
       return res.status(StatusCodes.UNAUTHORIZED).json(ServiceResponse.failure("Invalid token format", null));
     }
@@ -35,18 +37,28 @@ const validateTokenPermissions = (roles: EUserRoles[]) => {
 
       const { role } = decodedToken as JwtPayload;
 
-      if (!role || !Object.values(EUserRoles).includes(role as EUserRoles)) {
-        return res.status(StatusCodes.UNAUTHORIZED).json(ServiceResponse.failure("Invalid token", null));
+      // validate role only if roles are provided
+      if (roles && roles.length > 0) {
+        // ensure the role exists and is valid
+        if (!role || !Object.values(EUserRoles).includes(role as EUserRoles)) {
+          return res.status(StatusCodes.UNAUTHORIZED).json(ServiceResponse.failure("Invalid role in token", null));
+        }
+
+        // block access if the user's role is not in the allowed roles
+        if (!roles.includes(role as EUserRoles)) {
+          return res
+            .status(StatusCodes.FORBIDDEN)
+            .json(ServiceResponse.failure("Access denied: Insufficient permissions", null));
+        }
       }
 
-      if (!roles.includes(role as EUserRoles)) {
-        return res.status(StatusCodes.FORBIDDEN).json(ServiceResponse.failure("Unauthorized", null));
-      }
+      //  decoded token to the request object for downstream use
+      (req as any).user = decodedToken;
 
-      // go on to next step
+      // role is valid (or not required)
       next();
-    } catch (ex) {
-      return res.status(StatusCodes.UNAUTHORIZED).json(ServiceResponse.failure("Invalid token", null));
+    } catch (error) {
+      return res.status(StatusCodes.UNAUTHORIZED).json(ServiceResponse.failure("Failed to authenticate token", null));
     }
   };
 };

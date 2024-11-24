@@ -16,13 +16,16 @@
     "lint:fix": "biome check src/ --fix",
     "format": "biome format src/",
     "test": "vitest run",
-    "prepare": "husky"
+    "prepare": "husky",
+    "seed:admin": "tsx src/common/utils/adminSeed.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.0.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
+    "cron": "^3.2.1",
     "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
     "dotenv": "^16.4.5",
     "envalid": "^8.0.0",
     "express": "^4.19.2",

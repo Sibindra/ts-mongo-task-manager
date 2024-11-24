@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { orderController } from "@/api/order/orderController";
-import { CreateOrderSchema, GetOrderSchema, UpdateOrderStatusSchema } from "@/api/order/orderSchema";
+import { CreateOrderSchema, GetOrderSchema, OrderSchema, UpdateOrderStatusSchema } from "@/api/order/orderSchema";
 import { EUserRoles } from "@/api/user/userSchema";
 import { validateTokenPermissions } from "@/common/middleware/validateToken";
 import { validateRequest } from "@/common/utils/httpHandlers";
@@ -21,10 +21,34 @@ orderRegistry.registerPath({
   security: [{ BearerAuth: [] }],
   description: "Get all orders",
   tags: ["Order"],
-  responses: createApiResponse(z.array(GetOrderSchema), "Success"),
+  responses: createApiResponse(z.array(OrderSchema), "Success"),
 });
 
 orderRouter.get("/", orderController.getOrders);
+
+// GET /orders/my-orders
+orderRegistry.registerPath({
+  method: "get",
+  path: "/orders/my-orders",
+  description: "Get all orders by the current user",
+  tags: ["Order"],
+  security: [{ BearerAuth: [] }],
+  responses: createApiResponse(z.array(GetOrderSchema), "Success"),
+});
+
+orderRouter.get("/my-orders", validateTokenPermissions([EUserRoles.CUSTOMER]), orderController.getMyOrders);
+
+// GET /orders/user
+orderRegistry.registerPath({
+  method: "get",
+  path: "/orders/user",
+  description: "Get all orders by a user",
+  tags: ["Order"],
+  security: [{ BearerAuth: [] }],
+  responses: createApiResponse(z.array(GetOrderSchema), "Success"),
+});
+
+orderRouter.get("/user", validateTokenPermissions([EUserRoles.ADMIN]), orderController.getOrdersByUser);
 
 // GET /orders/:id
 orderRegistry.registerPath({
@@ -105,27 +129,3 @@ orderRouter.delete(
   validateRequest(GetOrderSchema),
   orderController.deleteOrder,
 );
-
-// GET /orders/user
-orderRegistry.registerPath({
-  method: "get",
-  path: "/orders/user",
-  description: "Get all orders by a user",
-  tags: ["Order"],
-  security: [{ BearerAuth: [] }],
-  responses: createApiResponse(z.array(GetOrderSchema), "Success"),
-});
-
-orderRouter.get("/user", validateTokenPermissions([EUserRoles.ADMIN]), orderController.getOrdersByUser);
-
-// GET /orders/my-orders
-orderRegistry.registerPath({
-  method: "get",
-  path: "/orders/my-orders",
-  description: "Get all orders by the current user",
-  tags: ["Order"],
-  security: [{ BearerAuth: [] }],
-  responses: createApiResponse(z.array(GetOrderSchema), "Success"),
-});
-
-orderRouter.get("/my-orders", validateTokenPermissions([EUserRoles.CUSTOMER]), orderController.getMyOrders);

@@ -2,9 +2,16 @@ import type { Request, RequestHandler, Response } from "express";
 
 import { DeleteUserSchema, GetUserSchema, UpdateUserSchema } from "@/api/user/userSchema";
 import { userService } from "@/api/user/userService";
+import { getIDFromRequest } from "@/common/utils/getIdFromReq";
 import { handleServiceResponse } from "@/common/utils/httpHandlers";
 
 class UserController {
+  public whoAmI: RequestHandler = async (req: Request, res: Response) => {
+    const id = await getIDFromRequest(req);
+    const serviceResponse = await userService.findById(id);
+    return handleServiceResponse(serviceResponse, res);
+  };
+
   public getUsers: RequestHandler = async (_req: Request, res: Response) => {
     const serviceResponse = await userService.findAll();
     return handleServiceResponse(serviceResponse, res);
@@ -34,8 +41,8 @@ class UserController {
   };
 
   public updateMe: RequestHandler = async (req: Request, res: Response) => {
-    const token = req.headers.authorization?.split(" ")[1] as string;
-    const serviceResponse = await userService.updateUser(token, req.body);
+    const id = (await getIDFromRequest(req)) as string;
+    const serviceResponse = await userService.updateUser(id, req.body);
     return handleServiceResponse(serviceResponse, res);
   };
 }

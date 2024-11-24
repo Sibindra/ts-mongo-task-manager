@@ -10,7 +10,7 @@ export class OrderService {
   // get all orders
   async findAll(): Promise<ServiceResponse<TOrder[] | null>> {
     try {
-      const orders = await Order.find().lean();
+      const orders = await Order.find().populate("products").populate("customer").lean();
 
       if (!orders || orders.length === 0) {
         return ServiceResponse.failure("No Orders Found", null, StatusCodes.NOT_FOUND);
@@ -43,29 +43,48 @@ export class OrderService {
   async createOrder(user_id: string, input: TCreateOrder): Promise<ServiceResponse<TOrder | null>> {
     try {
       const session = await Order.startSession();
-      session.startTransaction(); // atomic operations
+      session.startTransaction();
 
       try {
-        const product = await Product.findById(input.product_id).session(session);
+        const products = await Product.find({
+          _id: { $in: input.product_ids },
+        })
+          .select("stock")
+          .session(session);
 
-        if (!product || product.stock < 1) {
-          throw new Error("Product out of stock.");
+        if (!products.length || products.length !== input.product_ids.length) {
+          throw new Error("One or more products not found.");
         }
 
-        const order = await Order.create([{ ...input, user_id }], { session });
+        // check if all products are in stock
+        for (const product of products) {
+          if (product.stock < 1) {
+            throw new Error(`Product ${product.name} of ${product._id} is out of stock.`);
+          }
+        }
+
+        const order = await Order.create([{ ...input, products: input.product_ids, customer: user_id }], { session });
 
         if (!order) {
-          throw new Error("Failed to create order.");
+          throw new Error("Order creation failed.");
         }
 
-        // decrement product stock
-        await Product.findByIdAndUpdate(input.product_id, { $inc: { stock: -1 } }, { session });
+        // decrement stock
+        const updateStock = await Product.updateMany(
+          { _id: { $in: input.product_ids } },
+          { $inc: { stock: -1 } },
+          { session },
+        );
+
+        if (!updateStock) {
+          throw new Error("Failed to update stock.");
+        }
 
         await session.commitTransaction();
-        return ServiceResponse.success<TOrder>("Order created", order[0]); // Order is an array since `.create()` is called with a session
-      } catch (error) {
+        return ServiceResponse.success<TOrder>("Order created successfully", order[0]);
+      } catch (ex) {
         await session.abortTransaction();
-        throw error;
+        throw ex;
       } finally {
         session.endSession();
       }
@@ -92,7 +111,7 @@ export class OrderService {
   // get all orders by a user
   async getOrdersByUser(user_id: string): Promise<ServiceResponse<TOrder[] | null>> {
     try {
-      const orders = await Order.find({ user_id }).lean();
+      const orders = await Order.find({ customer: user_id }).lean();
 
       if (!orders || orders.length === 0) {
         return ServiceResponse.failure("No Orders Found", null, StatusCodes.NOT_FOUND);
@@ -130,7 +149,7 @@ export class OrderService {
 
       try {
         await Order.findByIdAndDelete(id, { session });
-        await Product.findByIdAndUpdate(order.product_id, { $inc: { stock: 1 } }, { session });
+        await Product.findByIdAndUpdate(order.product._id, { $inc: { stock: 1 } }, { session });
 
         await session.commitTransaction();
         return ServiceResponse.success<TOrder>("Order Deleted Successfully", order);

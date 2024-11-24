@@ -85,6 +85,20 @@ export class UserService {
       return handleServerError("updating user", error, "An error occurred while updating the user.");
     }
   }
+
+  async whoami(id: string): Promise<ServiceResponse<TUser | null>> {
+    try {
+      const user = await User.findById(id).lean();
+
+      if (!user) {
+        return ServiceResponse.failure("No such user found", null, StatusCodes.NOT_FOUND);
+      }
+
+      return ServiceResponse.success("User found", user);
+    } catch (error) {
+      return handleServerError("finding user", error, "An error occurred while finding the user.");
+    }
+  }
 }
 
 export const userService = new UserService();

@@ -7,6 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# donot store the temp and env folder in git
+/public/*
+
 coverage
 node_modules
 dist

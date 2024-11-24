@@ -16,8 +16,11 @@ export class AuthService {
         return ServiceResponse.failure("User not found", null, StatusCodes.NOT_FOUND);
       }
 
+      console.log("passwords:", input.password, user.password);
       // check password
       const isMatch = await bcryptUtil.comparePassword(input.password, user.password);
+
+      console.log("isMatch", isMatch);
       if (!isMatch) {
         return ServiceResponse.failure("Invalid email or password", null, StatusCodes.UNAUTHORIZED);
       }
