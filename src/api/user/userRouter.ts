@@ -11,7 +11,6 @@ import { validateRequest } from "@/common/utils/httpHandlers";
 export const userRegistry = new OpenAPIRegistry();
 export const userRouter: Router = express.Router();
 
-// TODO: need to create update me also
 userRegistry.register("User", UserSchema);
 
 // GET /users
@@ -95,3 +94,20 @@ userRouter.delete(
   validateRequest(GetUserSchema),
   userController.deleteUser,
 );
+
+// UPDATE me
+userRegistry.registerPath({
+  method: "put",
+  path: "/users/me",
+  description: "Update me as a user. This is a self update.",
+  tags: ["User"],
+  security: [{ BearerAuth: [] }],
+  request: {
+    body: {
+      content: { "application/json": { schema: UpdateUserSchema.shape.body } },
+    },
+  },
+  responses: createApiResponse(UserSchema, "Success"),
+});
+
+userRouter.put("/me", validateRequest(UpdateUserSchema), userController.updateMe);

@@ -21,6 +21,7 @@ authRegistry.registerPath({
   method: "post",
   path: "/auth/login",
   tags: ["Auth"],
+  description: "Login to the application",
   request: {
     body: {
       content: {
@@ -37,6 +38,7 @@ authRouter.post("/login", validateRequest(LoginSchema), authController.login);
 authRegistry.registerPath({
   method: "post",
   path: "/auth/refresh-token",
+  description: "Refresh the access token",
   tags: ["Auth"],
   request: {
     body: {

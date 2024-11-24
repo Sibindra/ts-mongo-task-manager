@@ -32,6 +32,12 @@ class UserController {
     const serviceResponse = await userService.updateUser(params.id, body);
     return handleServiceResponse(serviceResponse, res);
   };
+
+  public updateMe: RequestHandler = async (req: Request, res: Response) => {
+    const token = req.headers.authorization?.split(" ")[1] as string;
+    const serviceResponse = await userService.updateUser(token, req.body);
+    return handleServiceResponse(serviceResponse, res);
+  };
 }
 
 export const userController = new UserController();
