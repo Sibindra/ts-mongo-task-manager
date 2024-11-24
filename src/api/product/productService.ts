@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import { Product } from "@/api/product/productModel";
 import type { TCreateProduct, TProduct, TUpdateProduct } from "@/api/product/productSchema";
+import { handleServerError } from "@/common/models/handleServerError";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { duplicateKeyHandler } from "@/common/utils/duplicateKeyHandler";
-import { logger } from "@/server";
 import csvParser from "csv-parser";
 import { StatusCodes } from "http-status-codes";
 
@@ -11,42 +11,30 @@ export class ProductService {
   // get all products
   async findAll(): Promise<ServiceResponse<TProduct[] | null>> {
     try {
-      const products = await Product.find();
+      const products = await Product.find().lean();
 
       if (!products || products.length === 0) {
         return ServiceResponse.failure("No Products Found", null, StatusCodes.NOT_FOUND);
       }
 
       return ServiceResponse.success<TProduct[]>("Products Found", products);
-    } catch (ex) {
-      const errorMessage = `Error finding all products: ${(ex as Error).message}`;
-      logger.error(errorMessage);
-      return ServiceResponse.failure(
-        "An error occurred while retrieving products.",
-        null,
-        StatusCodes.INTERNAL_SERVER_ERROR,
-      );
+    } catch (error) {
+      return handleServerError("retrieving all products", error, "An error occurred while retrieving products.");
     }
   }
 
   // get a single product by its ID
   async findById(id: string): Promise<ServiceResponse<TProduct | null>> {
     try {
-      const product = await Product.findById(id);
+      const product = await Product.findById(id).lean();
 
       if (!product) {
         return ServiceResponse.failure("Product not found", null, StatusCodes.NOT_FOUND);
       }
 
       return ServiceResponse.success<TProduct>("Product found", product);
-    } catch (ex) {
-      const errorMessage = `Error finding product with id ${id}: ${(ex as Error).message}`;
-      logger.error(errorMessage);
-      return ServiceResponse.failure(
-        "An error occurred while finding product.",
-        null,
-        StatusCodes.INTERNAL_SERVER_ERROR,
-      );
+    } catch (error) {
+      return handleServerError(`finding product with ID ${id}`, error, "An error occurred while finding the product.");
     }
   }
 
@@ -54,46 +42,27 @@ export class ProductService {
   async createProduct(input: TCreateProduct): Promise<ServiceResponse<TProduct | null>> {
     try {
       const product = await Product.create(input);
+      return ServiceResponse.success<TProduct>("Product Created Successfully", product);
+    } catch (error) {
+      const duplicateErrorResponse = duplicateKeyHandler(error, "Product already exists");
+      if (duplicateErrorResponse) return duplicateErrorResponse;
 
-      if (!product) {
-        return ServiceResponse.failure("No Product Found", null, StatusCodes.NOT_FOUND);
-      }
-
-      return ServiceResponse.success<TProduct>("Product Created Succesfully", product);
-    } catch (ex) {
-      const duplicateErrorResponse = duplicateKeyHandler(ex, "Product already exists");
-      if (duplicateErrorResponse) {
-        return duplicateErrorResponse;
-      }
-
-      const errorMessage = `Error creating product: ${(ex as Error).message}`;
-      logger.error(errorMessage);
-      return ServiceResponse.failure(
-        "An error occurred while creating product.",
-        null,
-        StatusCodes.INTERNAL_SERVER_ERROR,
-      );
+      return handleServerError("creating product", error, "An error occurred while creating the product.");
     }
   }
 
   // delete existing product
   async deleteProduct(id: string): Promise<ServiceResponse<TProduct | null>> {
     try {
-      const product = await Product.findByIdAndDelete(id);
+      const product = await Product.findByIdAndDelete(id).lean();
 
       if (!product) {
         return ServiceResponse.failure("No Product Found", null, StatusCodes.NOT_FOUND);
       }
 
-      return ServiceResponse.success<TProduct>("Product Deleted Succesfully", product);
-    } catch (ex) {
-      const errorMessage = `Error deleting product: ${(ex as Error).message}`;
-      logger.error(errorMessage);
-      return ServiceResponse.failure(
-        "An error occurred while deleting product.",
-        null,
-        StatusCodes.INTERNAL_SERVER_ERROR,
-      );
+      return ServiceResponse.success<TProduct>("Product Deleted Successfully", product);
+    } catch (error) {
+      return handleServerError("deleting product", error, "An error occurred while deleting the product.");
     }
   }
 
@@ -103,81 +72,44 @@ export class ProductService {
       const product = await Product.findByIdAndUpdate(id, input, {
         new: true,
         runValidators: true,
-      });
+      }).lean();
 
       if (!product) {
         return ServiceResponse.failure("No Product Found", null, StatusCodes.NOT_FOUND);
       }
 
-      return ServiceResponse.success<TProduct>("Product Updated Succesfully", product);
-    } catch (ex) {
-      const duplicateErrorResponse = duplicateKeyHandler(ex, "Product already exists");
+      return ServiceResponse.success<TProduct>("Product Updated Successfully", product);
+    } catch (error) {
+      const duplicateErrorResponse = duplicateKeyHandler(error, "Product already exists");
+      if (duplicateErrorResponse) return duplicateErrorResponse;
 
-      if (duplicateErrorResponse) {
-        return duplicateErrorResponse;
-      }
-      const errorMessage = `Error updating product: ${(ex as Error).message}`;
-      logger.error(errorMessage);
-      return ServiceResponse.failure(
-        "An error occurred while updating product.",
-        null,
-        StatusCodes.INTERNAL_SERVER_ERROR,
-      );
+      return handleServerError("updating product", error, "An error occurred while updating the product.");
     }
   }
 
-  // upload products from csv file
-  async importProductsFromCSV(file: Express.Multer.File): Promise<ServiceResponse<TProduct[] | null>> {
-    // empty array of create product type
+  // upload products from CSV file
+  async importProductsFromCSV(file: Express.Multer.File): Promise<ServiceResponse<null>> {
     const products: TCreateProduct[] = [];
-
     try {
-      fs.createReadStream(file.path)
-        .pipe(csvParser())
-        .on("data", (data) => {
-          console.log("files: ", data);
-          /**
-           * check if data has following fields as per requirements:
-           * product_id, name, price, stock
-           *
-           * if data is valid then only push them into products array
-           */
-          if (data.product_id && data.name && data.price && data.stock) {
-            // not keeping product_id as it will be replaced by _id from mongodb so no need (maybe)
-            products.push({
-              name: data.name,
-              price: Number(data.price),
-              stock: Number(data.stock),
-            });
-          }
-        })
-        .on("end", async () => {
-          try {
-            // ordered false to continue inserting even if one fails (maybe duplicate so ignore them moveon to next data)
-            await Product.insertMany(products, { ordered: false });
-            return ServiceResponse.success("Products uploaded successfully", null);
-          } catch (error) {
-            const errorMessage = `Error uploading products from csv file: ${(error as Error).message}`;
-            logger.error(errorMessage);
-            return ServiceResponse.failure(
-              "An error occurred while uploading products from csv file.",
-              null,
-              StatusCodes.INTERNAL_SERVER_ERROR,
-            );
-          } finally {
-            // delete the file after reading it
-            fs.unlinkSync(file.path);
-          }
-        });
+      const parseStream = fs.createReadStream(file.path).pipe(csvParser());
+
+      for await (const data of parseStream) {
+        if (data.name && data.price && data.stock) {
+          products.push({
+            name: data.name,
+            price: Number(data.price),
+            stock: Number(data.stock),
+          });
+        }
+      }
+
+      // if duplicate then ignores and moves on to next product
+      await Product.insertMany(products, { ordered: false }); // continue inserting even if some products fail
       return ServiceResponse.success("Products uploaded successfully", null);
-    } catch (ex) {
-      const errorMessage = `Error uploading products from csv file: ${(ex as Error).message}`;
-      logger.error(errorMessage);
-      return ServiceResponse.failure(
-        "An error occurred while uploading products from csv file.",
-        null,
-        StatusCodes.INTERNAL_SERVER_ERROR,
-      );
+    } catch (error) {
+      return handleServerError("uploading products from CSV", error, "An error occurred while uploading products.");
+    } finally {
+      fs.unlinkSync(file.path);
     }
   }
 }

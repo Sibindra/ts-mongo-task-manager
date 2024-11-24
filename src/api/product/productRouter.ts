@@ -20,6 +20,7 @@ productRegistry.registerPath({
   method: "get",
   path: "/products",
   tags: ["Product"],
+  description: "Get all products",
   responses: createApiResponse(z.array(GetProductSchema), "Success"),
 });
 
@@ -30,6 +31,7 @@ productRegistry.registerPath({
   method: "get",
   path: "/products/{id}",
   tags: ["Product"],
+  description: "Get a single product by its ID",
   request: { params: GetProductSchema.shape.params },
   responses: createApiResponse(GetProductSchema, "Success"),
 });
@@ -41,6 +43,7 @@ productRegistry.registerPath({
   method: "post",
   path: "/products",
   tags: ["Product"],
+  description: "Create a new product",
   security: [{ BearerAuth: [] }],
   request: {
     body: {
@@ -64,6 +67,7 @@ productRegistry.registerPath({
   method: "put",
   path: "/products/{id}",
   tags: ["Product"],
+  description: "Update a product by its ID",
   security: [{ BearerAuth: [] }],
   request: {
     params: UpdateProductSchema.shape.params,
@@ -88,6 +92,7 @@ productRegistry.registerPath({
   method: "delete",
   path: "/products/{id}",
   security: [{ BearerAuth: [] }],
+  description: "Delete a product by its ID",
   tags: ["Product"],
   request: { params: GetProductSchema.shape.params },
   responses: createApiResponse(GetProductSchema, "Success"),
