@@ -1,6 +1,6 @@
 import type { TLogin, TLoginResponse, TRefreshToken, TRefreshTokenResponse } from "@/api/auth/authSchema";
 import { User } from "@/api/user/userModel";
-import { ServerErrorResponse } from "@/common/models/handleServerError";
+import { handleServerError } from "@/common/models/handleServerError";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { bcryptUtil } from "@/common/utils/bcryptUtil";
 import { type TokenPayload, tokenUtil } from "@/common/utils/tokenUtil";
@@ -36,7 +36,7 @@ export class AuthService {
         refreshToken,
       });
     } catch (error) {
-      return ServerErrorResponse.handleError("logging in", error, "An error occurred while logging in.");
+      return handleServerError("logging in", error, "An error occurred while logging in.");
     }
   }
 
@@ -63,7 +63,7 @@ export class AuthService {
         accessToken,
       });
     } catch (error) {
-      return ServerErrorResponse.handleError("refreshing token", error, "An error occurred while refreshing token.");
+      return handleServerError("refreshing token", error, "An error occurred while refreshing token.");
     }
   }
 }
