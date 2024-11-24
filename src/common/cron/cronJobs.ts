@@ -8,7 +8,7 @@ export enum ECronSchedule {
 }
 
 // run at midnight
-const job = new CronJob(ECronSchedule.EVERY_DAY_AT_MIDNIGHT, () => {
+const job = new CronJob(ECronSchedule.EVERY_MINUTE, () => {
   console.log("Running export job at midnight...");
   exportPaidOrders();
 });

@@ -9,6 +9,18 @@ export enum EEmailTemplate {
   USER_NOTIFICATION = "user-notification",
 }
 
+// supported email attachments
+export enum EEmailAttchments {
+  CSV = "text/csv",
+  TEXT = "text/plain",
+}
+
+export type TEmailAttachment = {
+  filename: string;
+  content: string;
+  contentType: EEmailAttchments;
+};
+
 const transporter = nodemailer.createTransport({
   host: env.EMAIL_HOST,
   port: env.EMAIL_PORT,
@@ -45,19 +57,21 @@ const getSubject = (templateName: EEmailTemplate): string => {
 };
 
 export const emailUtil = {
-  sendAdminEmailNotification: async (templateName: EEmailTemplate, message: string) => {
+  // for normal email notifications
+  sendAdminEmailNotification: async (message: string, attachments?: TEmailAttachment[]) => {
     try {
-      const subject = await getSubject(templateName);
-      const html = await getEmailTemplate(templateName, message);
+      const subject = await getSubject(EEmailTemplate.ADMIN_NOTIFICATION);
+      const html = await getEmailTemplate(EEmailTemplate.ADMIN_NOTIFICATION, message);
 
       const info = await transporter.sendMail({
         from: env.EMAIL_FROM,
         to: env.ADMIN_EMAIL,
         subject,
         html,
+        ...(attachments && { attachments }),
       });
 
-      logger.info(`Email sent: ${info.messageId} to ADMIN: ${env.ADMIN_EMAIL}`);
+      // logger.info(`Email sent: ${info.messageId} to ADMIN: ${env.ADMIN_EMAIL}`);
     } catch (error) {
       console.log(error);
       logger.error("Error sending email notification to admin", error);

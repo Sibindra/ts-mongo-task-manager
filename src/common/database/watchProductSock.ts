@@ -31,10 +31,7 @@ async function watchProductStock() {
 
           await Product.findById(change.documentKey._id).then((product) => {
             if (product) {
-              emailUtil.sendAdminEmailNotification(
-                EEmailTemplate.ADMIN_NOTIFICATION,
-                `Product ${product.name}'s stock is below threshold ${threshold}.`,
-              );
+              emailUtil.sendAdminEmailNotification(`Product ${product.name}'s stock is below threshold ${threshold}.`);
             }
           });
         }

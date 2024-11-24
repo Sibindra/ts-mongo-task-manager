@@ -1,15 +1,13 @@
-import fs from "node:fs";
-import path from "node:path";
 import { Order } from "@/api/order/orderModel";
 import { EOrderStatus } from "@/api/order/orderSchema";
-import { env } from "@/common/configs/envConfig";
+import { EEmailAttchments, emailUtil } from "@/common/utils/emailUtil";
 import { logger } from "@/server";
-import { createObjectCsvWriter } from "csv-writer";
+import { createObjectCsvStringifier } from "csv-writer";
 
 /**
  * get all paid orders from the db
- * export them into a CSV
- * and save it to the specified folder.
+ * export them into a CSV content
+ * send it as an email attachment.
  */
 const exportPaidOrders = async () => {
   try {
@@ -20,15 +18,7 @@ const exportPaidOrders = async () => {
       return;
     }
 
-    const filePath = path.join(env.CSV_RECORDS_PATH, `record-${new Date().toISOString().split("T")[0]}.csv`);
-
-    const dirPath = path.dirname(filePath);
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true }); // create folder if it does not exist
-    }
-
-    const csvWriter = createObjectCsvWriter({
-      path: filePath,
+    const csvStringifier = createObjectCsvStringifier({
       header: [
         { id: "order_id", title: "Order ID" },
         { id: "customer_name", title: "Customer Name" },
@@ -50,10 +40,21 @@ const exportPaidOrders = async () => {
       };
     });
 
-    // Write records to the CSV
-    await csvWriter.writeRecords(records);
-    logger.info(`Paid orders exported to ${filePath}`);
-    console.log(`Paid orders exported to ${filePath}`);
+    const csvContent = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(records);
+
+    console.log("CSV content generated for email:", csvContent);
+
+    // send admin email at midnight
+    await emailUtil.sendAdminEmailNotification(`Log of paid orders for ${new Date().toISOString().split("T")[0]}`, [
+      {
+        filename: `record-${new Date().toISOString().split("T")[0]}.csv`,
+        content: csvContent,
+        contentType: EEmailAttchments.CSV,
+      },
+    ]);
+
+    logger.info("Paid orders CSV content sent successfully");
+    console.log("Paid orders CSV content sent successfully");
   } catch (error) {
     console.error("Error exporting paid orders:", error);
     logger.error("Error exporting paid orders:", error);
