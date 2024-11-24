@@ -2,7 +2,7 @@ import { Order } from "@/api/order/orderModel";
 import type { TCreateOrder, TOrder } from "@/api/order/orderSchema";
 import { EOrderStatus } from "@/api/order/orderSchema";
 import { Product } from "@/api/product/productModel";
-import { ServerErrorResponse } from "@/common/models/serverErrorResponse";
+import { handleServerError } from "@/common/models/handleServerError";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { StatusCodes } from "http-status-codes";
 
@@ -18,11 +18,7 @@ export class OrderService {
 
       return ServiceResponse.success<TOrder[]>("Orders Found", orders);
     } catch (error) {
-      return ServerErrorResponse.handleError(
-        "retrieving all orders",
-        error,
-        "An error occurred while retrieving orders.",
-      );
+      return handleServerError("retrieving all orders", error, "An error occurred while retrieving orders.");
     }
   }
 
@@ -37,11 +33,7 @@ export class OrderService {
 
       return ServiceResponse.success<TOrder>("Order found", order);
     } catch (error) {
-      return ServerErrorResponse.handleError(
-        `finding order with ID ${id}`,
-        error,
-        "An error occurred while finding the order.",
-      );
+      return handleServerError(`finding order with ID ${id}`, error, "An error occurred while finding the order.");
     }
   }
 
@@ -78,7 +70,7 @@ export class OrderService {
         session.endSession();
       }
     } catch (error) {
-      return ServerErrorResponse.handleError("creating order", error, "An error occurred while creating the order.");
+      return handleServerError("creating order", error, "An error occurred while creating the order.");
     }
   }
 
@@ -93,11 +85,7 @@ export class OrderService {
 
       return ServiceResponse.success<TOrder>(`Order status updated to ${status}`, order);
     } catch (error) {
-      return ServerErrorResponse.handleError(
-        `updating order with ID ${id}`,
-        error,
-        "An error occurred while updating the order.",
-      );
+      return handleServerError(`updating order with ID ${id}`, error, "An error occurred while updating the order.");
     }
   }
 
@@ -112,7 +100,7 @@ export class OrderService {
 
       return ServiceResponse.success<TOrder[]>("Orders Found", orders);
     } catch (error) {
-      return ServerErrorResponse.handleError(
+      return handleServerError(
         `retrieving orders for user with ID ${user_id}`,
         error,
         "An error occurred while retrieving orders.",
@@ -153,11 +141,7 @@ export class OrderService {
         session.endSession();
       }
     } catch (error) {
-      return ServerErrorResponse.handleError(
-        `deleting order with ID ${id}`,
-        error,
-        "An error occurred while deleting the order.",
-      );
+      return handleServerError(`deleting order with ID ${id}`, error, "An error occurred while deleting the order.");
     }
   }
 }

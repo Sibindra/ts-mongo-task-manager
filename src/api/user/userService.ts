@@ -1,6 +1,6 @@
 import { User } from "@/api/user/userModel";
 import type { TCreateUser, TUpdateUser, TUser } from "@/api/user/userSchema";
-import { ServerErrorResponse } from "@/common/models/serverErrorResponse";
+import { handleServerError } from "@/common/models/handleServerError";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { duplicateKeyHandler } from "@/common/utils/duplicateKeyHandler";
 import { StatusCodes } from "http-status-codes";
@@ -17,11 +17,7 @@ export class UserService {
 
       return ServiceResponse.success<TUser[]>("Users Found", users);
     } catch (error) {
-      return ServerErrorResponse.handleError(
-        "retrieving all users",
-        error,
-        "An error occurred while retrieving users.",
-      );
+      return handleServerError("retrieving all users", error, "An error occurred while retrieving users.");
     }
   }
 
@@ -36,11 +32,7 @@ export class UserService {
 
       return ServiceResponse.success<TUser>("User found", user);
     } catch (error) {
-      return ServerErrorResponse.handleError(
-        `finding user with ID ${id}`,
-        error,
-        "An error occurred while finding the user.",
-      );
+      return handleServerError(`finding user with ID ${id}`, error, "An error occurred while finding the user.");
     }
   }
 
@@ -54,7 +46,7 @@ export class UserService {
       const duplicateErrorResponse = duplicateKeyHandler(error, "User already exists");
       if (duplicateErrorResponse) return duplicateErrorResponse;
 
-      return ServerErrorResponse.handleError("creating user", error, "An error occurred while creating the user.");
+      return handleServerError("creating user", error, "An error occurred while creating the user.");
     }
   }
 
@@ -69,7 +61,7 @@ export class UserService {
 
       return ServiceResponse.success("User Deleted Successfully", null);
     } catch (error) {
-      return ServerErrorResponse.handleError("deleting user", error, "An error occurred while deleting the user.");
+      return handleServerError("deleting user", error, "An error occurred while deleting the user.");
     }
   }
 
@@ -90,7 +82,7 @@ export class UserService {
       const duplicateErrorResponse = duplicateKeyHandler(error, "User already exists");
       if (duplicateErrorResponse) return duplicateErrorResponse;
 
-      return ServerErrorResponse.handleError("updating user", error, "An error occurred while updating the user.");
+      return handleServerError("updating user", error, "An error occurred while updating the user.");
     }
   }
 }

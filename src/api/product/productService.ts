@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { Product } from "@/api/product/productModel";
 import type { TCreateProduct, TProduct, TUpdateProduct } from "@/api/product/productSchema";
-import { ServerErrorResponse } from "@/common/models/serverErrorResponse";
+import { handleServerError } from "@/common/models/handleServerError";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { duplicateKeyHandler } from "@/common/utils/duplicateKeyHandler";
 import csvParser from "csv-parser";
@@ -19,11 +19,7 @@ export class ProductService {
 
       return ServiceResponse.success<TProduct[]>("Products Found", products);
     } catch (error) {
-      return ServerErrorResponse.handleError(
-        "retrieving all products",
-        error,
-        "An error occurred while retrieving products.",
-      );
+      return handleServerError("retrieving all products", error, "An error occurred while retrieving products.");
     }
   }
 
@@ -38,11 +34,7 @@ export class ProductService {
 
       return ServiceResponse.success<TProduct>("Product found", product);
     } catch (error) {
-      return ServerErrorResponse.handleError(
-        `finding product with ID ${id}`,
-        error,
-        "An error occurred while finding the product.",
-      );
+      return handleServerError(`finding product with ID ${id}`, error, "An error occurred while finding the product.");
     }
   }
 
@@ -55,11 +47,7 @@ export class ProductService {
       const duplicateErrorResponse = duplicateKeyHandler(error, "Product already exists");
       if (duplicateErrorResponse) return duplicateErrorResponse;
 
-      return ServerErrorResponse.handleError(
-        "creating product",
-        error,
-        "An error occurred while creating the product.",
-      );
+      return handleServerError("creating product", error, "An error occurred while creating the product.");
     }
   }
 
@@ -74,11 +62,7 @@ export class ProductService {
 
       return ServiceResponse.success<TProduct>("Product Deleted Successfully", product);
     } catch (error) {
-      return ServerErrorResponse.handleError(
-        "deleting product",
-        error,
-        "An error occurred while deleting the product.",
-      );
+      return handleServerError("deleting product", error, "An error occurred while deleting the product.");
     }
   }
 
@@ -99,11 +83,7 @@ export class ProductService {
       const duplicateErrorResponse = duplicateKeyHandler(error, "Product already exists");
       if (duplicateErrorResponse) return duplicateErrorResponse;
 
-      return ServerErrorResponse.handleError(
-        "updating product",
-        error,
-        "An error occurred while updating the product.",
-      );
+      return handleServerError("updating product", error, "An error occurred while updating the product.");
     }
   }
 
@@ -127,11 +107,7 @@ export class ProductService {
       await Product.insertMany(products, { ordered: false }); // continue inserting even if some products fail
       return ServiceResponse.success("Products uploaded successfully", null);
     } catch (error) {
-      return ServerErrorResponse.handleError(
-        "uploading products from CSV",
-        error,
-        "An error occurred while uploading products.",
-      );
+      return handleServerError("uploading products from CSV", error, "An error occurred while uploading products.");
     } finally {
       fs.unlinkSync(file.path);
     }

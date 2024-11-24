@@ -1,6 +1,6 @@
 import type { TLogin, TLoginResponse, TRefreshToken, TRefreshTokenResponse } from "@/api/auth/authSchema";
 import { User } from "@/api/user/userModel";
-import { ServerErrorResponse } from "@/common/models/serverErrorResponse";
+import { ServerErrorResponse } from "@/common/models/handleServerError";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { bcryptUtil } from "@/common/utils/bcryptUtil";
 import { type TokenPayload, tokenUtil } from "@/common/utils/tokenUtil";
