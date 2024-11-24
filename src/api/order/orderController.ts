@@ -4,12 +4,10 @@ import type { Request, RequestHandler, Response } from "express";
 import { orderService } from "@/api/order/orderService";
 import { handleServiceResponse } from "@/common/models/httpHandlers";
 import { getIDFromRequest } from "@/common/utils/getIdFromReq";
-import { tokenUtil } from "@/common/utils/tokenUtil";
-import type { JwtPayload } from "jsonwebtoken";
 
 class OrderController {
-  public getOrders: RequestHandler = async (_req: Request, res: Response) => {
-    const serviceResponse = await orderService.findAll();
+  public getOrders: RequestHandler = async (req: Request, res: Response) => {
+    const serviceResponse = await orderService.findAll(req.query);
     return handleServiceResponse(serviceResponse, res);
   };
 

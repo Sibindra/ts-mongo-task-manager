@@ -1,23 +1,34 @@
 import fs from "node:fs";
 import { Product } from "@/api/product/productModel";
-import type { TCreateProduct, TProduct, TUpdateProduct } from "@/api/product/productSchema";
+import type { TCreateProduct, TGetAllProducts, TProduct, TUpdateProduct } from "@/api/product/productSchema";
 import { duplicateKeyHandler } from "@/common/models/duplicateKeyHandler";
 import { handleServerError } from "@/common/models/handleServerError";
 import { ServiceResponse } from "@/common/models/serviceResponse";
+import type { TPaginationResponse } from "@/common/utils/commonSchema";
 import csvParser from "csv-parser";
 import { StatusCodes } from "http-status-codes";
 
 export class ProductService {
   // get all products
-  async findAll(): Promise<ServiceResponse<TProduct[] | null>> {
+  async findAll(query: TGetAllProducts): Promise<ServiceResponse<TPaginationResponse<TProduct> | null>> {
     try {
-      const products = await Product.find().lean();
+      const { page = 1, limit = 10 } = query;
+      const skip = page > 0 ? (page - 1) * limit : 0;
+      const products = await Product.find().skip(skip).limit(limit).lean();
+
+      const totalItems = await Product.countDocuments();
+      const totalPages = Math.ceil(totalItems / limit);
 
       if (!products || products.length === 0) {
         return ServiceResponse.failure("No Products Found", null, StatusCodes.NOT_FOUND);
       }
 
-      return ServiceResponse.success<TProduct[]>("Products Found", products);
+      return ServiceResponse.success<TPaginationResponse<TProduct>>("Products Found", {
+        data: products,
+        totalItems,
+        totalPages,
+        currentPage: page,
+      });
     } catch (error) {
       return handleServerError("retrieving all products", error, "An error occurred while retrieving products.");
     }

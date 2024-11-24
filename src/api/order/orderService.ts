@@ -1,22 +1,34 @@
 import { Order } from "@/api/order/orderModel";
-import type { TCreateOrder, TOrder } from "@/api/order/orderSchema";
+import type { TCreateOrder, TGetAllOrders, TOrder } from "@/api/order/orderSchema";
 import { EOrderStatus } from "@/api/order/orderSchema";
 import { Product } from "@/api/product/productModel";
 import { handleServerError } from "@/common/models/handleServerError";
 import { ServiceResponse } from "@/common/models/serviceResponse";
+import type { TPaginationResponse } from "@/common/utils/commonSchema";
 import { StatusCodes } from "http-status-codes";
 
 export class OrderService {
   // get all orders
-  async findAll(): Promise<ServiceResponse<TOrder[] | null>> {
+  async findAll(query: TGetAllOrders): Promise<ServiceResponse<TPaginationResponse<TOrder> | null>> {
     try {
-      const orders = await Order.find().populate("products").populate("customer").lean();
+      const { page = 1, limit = 10 } = query;
+      const skip = page > 0 ? (page - 1) * limit : 0;
+
+      const orders = await Order.find().populate("products").populate("customer").skip(skip).limit(limit).lean();
+
+      const totalItems = await Order.countDocuments();
+      const totalPages = Math.ceil(totalItems / limit);
 
       if (!orders || orders.length === 0) {
         return ServiceResponse.failure("No Orders Found", null, StatusCodes.NOT_FOUND);
       }
 
-      return ServiceResponse.success<TOrder[]>("Orders Found", orders);
+      return ServiceResponse.success<TPaginationResponse<TOrder>>("Orders Found", {
+        data: orders,
+        totalItems,
+        totalPages,
+        currentPage: page,
+      });
     } catch (error) {
       return handleServerError("retrieving all orders", error, "An error occurred while retrieving orders.");
     }
@@ -149,7 +161,8 @@ export class OrderService {
 
       try {
         await Order.findByIdAndDelete(id, { session });
-        await Product.findByIdAndUpdate(order.product._id, { $inc: { stock: 1 } }, { session });
+
+        await Product.updateMany({ _id: { $in: order.products } }, { $inc: { stock: 1 } }, { session });
 
         await session.commitTransaction();
         return ServiceResponse.success<TOrder>("Order Deleted Successfully", order);

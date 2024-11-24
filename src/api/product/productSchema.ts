@@ -6,13 +6,14 @@
  *
  */
 
-import { commonValidations } from "@/common/utils/commonValidation";
+import { commonSchema, paginationSchema } from "@/common/utils/commonSchema";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 
 extendZodWithOpenApi(z);
 
 export type TProduct = z.infer<typeof ProductSchema>;
+export type TGetAllProducts = z.infer<typeof GetAllProductsSchema.shape.query>;
 export type TCreateProduct = z.infer<typeof CreateProductSchema.shape.body>;
 export type TUpdateProduct = z.infer<typeof UpdateProductSchema.shape.body>;
 export type TGetProduct = z.infer<typeof GetProductSchema>;
@@ -20,12 +21,16 @@ export type TDeleteProduct = z.infer<typeof DeleteProductSchema>;
 
 export const ProductSchema = z
   .object({
-    ...commonValidations,
+    ...commonSchema,
     name: z.string(),
     price: z.number(),
     stock: z.number(),
   })
   .strict();
+
+export const GetAllProductsSchema = z.object({
+  query: paginationSchema.query,
+});
 
 //   POST products
 export const CreateProductSchema = z.object({
@@ -38,7 +43,7 @@ export const CreateProductSchema = z.object({
 
 // UPDATE products/:id
 export const UpdateProductSchema = z.object({
-  params: z.object({ id: commonValidations._id }),
+  params: z.object({ id: commonSchema._id }),
   body: ProductSchema.omit({
     _id: true,
     updatedAt: true,
@@ -48,10 +53,10 @@ export const UpdateProductSchema = z.object({
 
 // GET products/:id
 export const GetProductSchema = z.object({
-  params: z.object({ id: commonValidations._id }),
+  params: z.object({ id: commonSchema._id }),
 });
 
 // DELETE products/:id
 export const DeleteProductSchema = z.object({
-  params: z.object({ id: commonValidations._id }),
+  params: z.object({ id: commonSchema._id }),
 });

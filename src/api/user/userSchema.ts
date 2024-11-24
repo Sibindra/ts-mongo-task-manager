@@ -1,10 +1,11 @@
-import { commonValidations } from "@/common/utils/commonValidation";
+import { commonSchema, paginationSchema } from "@/common/utils/commonSchema";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 
 extendZodWithOpenApi(z);
 
 export type TUser = z.infer<typeof UserSchema>;
+export type TGetAllUsers = z.infer<typeof GetAllUsersSchema.shape.query>;
 export type TCreateUser = z.infer<typeof CreateUserSchema>;
 export type TUpdateUser = z.infer<typeof UpdateUserSchema.shape.body>;
 export type TGetUser = z.infer<typeof GetUserSchema>;
@@ -17,7 +18,7 @@ export enum EUserRoles {
 
 export const UserSchema = z
   .object({
-    ...commonValidations,
+    ...commonSchema,
     name: z.string().describe("User name"),
     email: z.string().email().describe("User email address"),
     password: z.string().describe("User password"),
@@ -36,14 +37,18 @@ export const CreateUserSchema = z.object({
   }),
 });
 
+export const GetAllUsersSchema = z.object({
+  query: paginationSchema.query,
+});
+
 // GET users/:id
 export const GetUserSchema = z.object({
-  params: z.object({ id: commonValidations._id }),
+  params: z.object({ id: commonSchema._id }),
 });
 
 // UPDATE users/:id
 export const UpdateUserSchema = z.object({
-  params: z.object({ id: commonValidations._id }),
+  params: z.object({ id: commonSchema._id }),
   body: UserSchema.omit({
     _id: true,
     createdAt: true,

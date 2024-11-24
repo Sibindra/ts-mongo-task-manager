@@ -6,8 +6,8 @@ import { productService } from "@/api/product/productService";
 import { handleServiceResponse } from "@/common/models/httpHandlers";
 
 class ProductController {
-  public getProducts: RequestHandler = async (_req: Request, res: Response) => {
-    const serviceResponse = await productService.findAll();
+  public getProducts: RequestHandler = async (req: Request, res: Response) => {
+    const serviceResponse = await productService.findAll(req.query);
     return handleServiceResponse(serviceResponse, res);
   };
 

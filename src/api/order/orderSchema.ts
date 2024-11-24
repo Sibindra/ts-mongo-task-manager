@@ -8,7 +8,7 @@ import { UserSchema } from "@/api/user/userSchema";
  * status (pending, completed, cancelled)
  *
  */
-import { commonValidations } from "@/common/utils/commonValidation";
+import { commonSchema, paginationSchema } from "@/common/utils/commonSchema";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 
@@ -20,6 +20,7 @@ export enum EOrderStatus {
 }
 
 export type TOrder = z.infer<typeof OrderSchema>;
+export type TGetAllOrders = z.infer<typeof GetAllOrdersSchema.shape.query>;
 export type TCreateOrder = z.infer<typeof CreateOrderSchema.shape.body>;
 export type TUpdateOrderStatus = z.infer<typeof UpdateOrderStatusSchema.shape.body>;
 export type TGetOrder = z.infer<typeof GetOrderSchema>;
@@ -28,7 +29,7 @@ export type TDeleteOrder = z.infer<typeof DeleteOrderSchema>;
 // no order_date since order_date is createdAt but if needed we can add it
 export const OrderSchema = z
   .object({
-    ...commonValidations,
+    ...commonSchema,
     products: z.array(ProductSchema),
     customer: UserSchema,
     status: z.nativeEnum(EOrderStatus),
@@ -43,21 +44,25 @@ export const OrderSchema = z
  */
 export const CreateOrderSchema = z.object({
   body: z.object({
-    product_ids: z.array(commonValidations._id),
+    product_ids: z.array(commonSchema._id),
   }),
 });
 
+export const GetAllOrdersSchema = z.object({
+  query: paginationSchema.query,
+});
+
 export const UpdateOrderStatusSchema = z.object({
-  params: z.object({ id: commonValidations._id }), // order_id
+  params: z.object({ id: commonSchema._id }), // order_id
   body: OrderSchema.pick({
     status: true,
   }).strict(),
 });
 
 export const GetOrderSchema = z.object({
-  params: z.object({ id: commonValidations._id }), // order_id
+  params: z.object({ id: commonSchema._id }), // order_id
 });
 
 export const DeleteOrderSchema = z.object({
-  params: z.object({ id: commonValidations._id }), // order_id
+  params: z.object({ id: commonSchema._id }), // order_id
 });

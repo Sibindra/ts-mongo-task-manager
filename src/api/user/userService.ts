@@ -1,21 +1,34 @@
 import { User } from "@/api/user/userModel";
-import type { TCreateUser, TUpdateUser, TUser } from "@/api/user/userSchema";
+import type { TCreateUser, TGetAllUsers, TUpdateUser, TUser } from "@/api/user/userSchema";
 import { duplicateKeyHandler } from "@/common/models/duplicateKeyHandler";
 import { handleServerError } from "@/common/models/handleServerError";
 import { ServiceResponse } from "@/common/models/serviceResponse";
+import type { TPaginationResponse } from "@/common/utils/commonSchema";
 import { StatusCodes } from "http-status-codes";
 
 export class UserService {
   // retrieves all users
-  async findAll(): Promise<ServiceResponse<TUser[] | null>> {
+  async findAll(query: TGetAllUsers): Promise<ServiceResponse<TPaginationResponse<TUser> | null>> {
     try {
-      const users = await User.find().lean();
+      const { page = 1, limit = 10 } = query;
+      const skip = page > 0 ? (page - 1) * limit : 0;
+
+      const users = await User.find().skip(skip).limit(limit).lean();
+
+      const totalItems = await User.countDocuments();
 
       if (!users || users.length === 0) {
         return ServiceResponse.failure("No Users Found", null, StatusCodes.NOT_FOUND);
       }
 
-      return ServiceResponse.success<TUser[]>("Users Found", users);
+      const totalPages = Math.ceil(totalItems / limit);
+
+      return ServiceResponse.success<TPaginationResponse<TUser>>("Users Found", {
+        data: users,
+        totalItems,
+        totalPages,
+        currentPage: page,
+      });
     } catch (error) {
       return handleServerError("retrieving all users", error, "An error occurred while retrieving users.");
     }

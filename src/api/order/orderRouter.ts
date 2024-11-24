@@ -4,7 +4,13 @@ import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { orderController } from "@/api/order/orderController";
-import { CreateOrderSchema, GetOrderSchema, OrderSchema, UpdateOrderStatusSchema } from "@/api/order/orderSchema";
+import {
+  CreateOrderSchema,
+  GetAllOrdersSchema,
+  GetOrderSchema,
+  OrderSchema,
+  UpdateOrderStatusSchema,
+} from "@/api/order/orderSchema";
 import { EUserRoles } from "@/api/user/userSchema";
 import { validateTokenPermissions } from "@/common/middleware/validateToken";
 import { validateRequest } from "@/common/models/httpHandlers";
@@ -20,6 +26,7 @@ orderRegistry.registerPath({
   path: "/orders",
   security: [{ BearerAuth: [] }],
   description: "Get all orders",
+  request: { query: GetAllOrdersSchema.shape.query },
   tags: ["Order"],
   responses: createApiResponse(z.array(OrderSchema), "Success"),
 });

@@ -4,7 +4,14 @@ import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { userController } from "@/api/user/userController";
-import { CreateUserSchema, EUserRoles, GetUserSchema, UpdateUserSchema, UserSchema } from "@/api/user/userSchema";
+import {
+  CreateUserSchema,
+  EUserRoles,
+  GetAllUsersSchema,
+  GetUserSchema,
+  UpdateUserSchema,
+  UserSchema,
+} from "@/api/user/userSchema";
 import { validateTokenPermissions } from "@/common/middleware/validateToken";
 import { validateRequest } from "@/common/models/httpHandlers";
 
@@ -19,6 +26,7 @@ userRegistry.registerPath({
   path: "/users",
   tags: ["User"],
   security: [{ BearerAuth: [] }],
+  request: { query: GetAllUsersSchema.shape.query },
   responses: createApiResponse(z.array(UserSchema), "Success"),
 });
 

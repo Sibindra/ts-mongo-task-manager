@@ -4,7 +4,12 @@ import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { productController } from "@/api/product/productController";
-import { CreateProductSchema, GetProductSchema, UpdateProductSchema } from "@/api/product/productSchema";
+import {
+  CreateProductSchema,
+  GetAllProductsSchema,
+  GetProductSchema,
+  UpdateProductSchema,
+} from "@/api/product/productSchema";
 import { EUserRoles } from "@/api/user/userSchema";
 import upload from "@/common/configs/uploadConfig";
 import { validateTokenPermissions } from "@/common/middleware/validateToken";
@@ -21,6 +26,7 @@ productRegistry.registerPath({
   path: "/products",
   tags: ["Product"],
   description: "Get all products",
+  request: { query: GetAllProductsSchema.shape.query },
   responses: createApiResponse(z.array(GetProductSchema), "Success"),
 });
 

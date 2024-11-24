@@ -12,8 +12,9 @@ class UserController {
     return handleServiceResponse(serviceResponse, res);
   };
 
-  public getUsers: RequestHandler = async (_req: Request, res: Response) => {
-    const serviceResponse = await userService.findAll();
+  public getUsers: RequestHandler = async (req: Request, res: Response) => {
+    const query = req.query;
+    const serviceResponse = await userService.findAll(query);
     return handleServiceResponse(serviceResponse, res);
   };
 
